@@ -1,0 +1,33 @@
+/* 👤 담당: 이혜원 — 클래스 접두사 .result 유지 */
+.result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.result__title { text-align: center; font-size: var(--font-size-lg); margin: 0; }
+.result__score { text-align: center; font-size: var(--font-size-xl); font-weight: 900; color: var(--color-primary); }
+
+.result__stats { display: flex; justify-content: space-around; margin: var(--space-3) 0 0; }
+.result__stats div { text-align: center; }
+.result__stats dt { font-size: var(--font-size-sm); color: var(--color-text-dim); }
+.result__stats dd { margin: var(--space-1) 0 0; font-weight: 700; }
+
+.result__submit { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.result__input {
+  padding: var(--space-3);
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-base);
+  font-size: var(--font-size-md);
+  text-align: center;
+}
+
+.result__rank { text-align: center; font-size: var(--font-size-md); }
+.result__error { color: var(--color-danger); font-size: var(--font-size-sm); text-align: center; }

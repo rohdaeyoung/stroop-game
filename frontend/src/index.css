@@ -1,0 +1,23 @@
+/* ⚠️ [공용] 전역 리셋만. 각자 스타일은 자기 폴더의 CSS 파일에 작성하세요. */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.app-shell {
+  max-width: 480px;
+  min-height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,23 @@
+/* 👤 담당: 나연 */
+.ds-button {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-base);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.ds-button:active { transform: scale(0.96); }
+.ds-button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ds-button--primary { background: var(--color-primary); }
+.ds-button--ghost {
+  background: transparent;
+  border: 2px solid var(--color-text-dim);
+  color: var(--color-text-dim);
+}

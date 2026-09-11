@@ -1,0 +1,21 @@
+# ── 공통
+.DS_Store
+*.log
+.env
+.env.local
+.idea/
+.vscode/
+*.iml
+
+# ── Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/node_modules/
+
+# ── Backend
+backend/build/
+backend/.gradle/
+backend/out/
+backend/bin/
+backend/src/main/resources/application-local.yml

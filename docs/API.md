@@ -1,0 +1,74 @@
+# API 명세 (FE ↔ BE 계약)
+
+> ⚠️ 이 문서는 **FE 4명 + BE 2명 전원에게 영향**을 줍니다.
+> 바꾸려면 팀 합의 후 PR 제목에 `[shared]`를 붙이세요.
+
+Base URL: `http://localhost:8080`
+
+---
+
+## 1. 점수 제출
+
+`POST /api/scores`
+
+**Request**
+```json
+{
+  "nickname": "대영",
+  "score": 1250,
+  "maxCombo": 17,
+  "correctCount": 42,
+  "wrongCount": 3,
+  "playTimeMs": 61000
+}
+```
+
+**Response** `201 Created`
+```json
+{
+  "scoreId": 12,
+  "rank": 4,
+  "isNewRecord": true
+}
+```
+
+---
+
+## 2. 랭킹 조회
+
+`GET /api/rankings?limit=10`
+
+**Response** `200 OK`
+```json
+{
+  "rankings": [
+    { "rank": 1, "nickname": "민서", "score": 2100, "maxCombo": 28, "createdAt": "2026-09-11T14:00:00" }
+  ]
+}
+```
+
+---
+
+## 3. 내 순위 조회
+
+`GET /api/rankings/me?scoreId=12`
+
+**Response** `200 OK`
+```json
+{ "rank": 4, "total": 137, "percentile": 2.9 }
+```
+
+---
+
+## 공통 에러 포맷
+
+```json
+{ "code": "INVALID_NICKNAME", "message": "닉네임은 1~10자여야 합니다." }
+```
+
+| HTTP | code | 상황 |
+|---|---|---|
+| 400 | `INVALID_NICKNAME` | 닉네임 길이/문자 오류 |
+| 400 | `INVALID_SCORE` | 점수가 음수이거나 비정상 |
+| 404 | `SCORE_NOT_FOUND` | scoreId 없음 |
+| 500 | `INTERNAL_ERROR` | 서버 오류 |
