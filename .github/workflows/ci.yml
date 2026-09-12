@@ -1,8 +1,8 @@
 name: CI
 
 on:
+  # base 가 main 이 아닌 PR(브랜치를 쌓아 올린 경우)에서도 돌도록 대상을 제한하지 않는다
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
