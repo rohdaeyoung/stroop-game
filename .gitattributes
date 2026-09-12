@@ -1,0 +1,6 @@
+* text=auto
+
+# gradlew 는 Mac·Linux 에서 실행되므로 항상 LF 로 체크아웃되어야 한다
+gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary

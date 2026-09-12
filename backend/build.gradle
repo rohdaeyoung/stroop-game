@@ -6,7 +6,8 @@ plugins {
 
 group = 'com.stroop'
 version = '0.0.1-SNAPSHOT'
-java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+// JDK 17 이 따로 깔려 있지 않아도 빌드되도록 툴체인을 고정하지 않고 release 17 로 컴파일한다
+tasks.withType(JavaCompile).configureEach { options.release = 17 }
 
 repositories { mavenCentral() }
 
