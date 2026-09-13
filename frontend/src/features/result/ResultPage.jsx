@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Button from '../../design/components/Button.jsx'
 import Card from '../../design/components/Card.jsx'
-import { api } from '../../shared/api/client.js'
+import { api, getApiErrorMessage } from '../../shared/api/client.js'
 import './Result.css'
 
 export default function ResultPage() {
@@ -12,7 +12,8 @@ export default function ResultPage() {
   const { state } = useLocation()
   const [nickname, setNickname] = useState('')
   const [submitted, setSubmitted] = useState(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
   // 게임을 거치지 않고 직접 들어온 경우
   if (!state) {
@@ -25,11 +26,15 @@ export default function ResultPage() {
   }
 
   async function handleSubmit() {
+    setError(null)
+    setSubmitting(true)
     try {
       const res = await api.submitScore({ nickname, ...state })
       setSubmitted(res)
     } catch (e) {
-      setError(e.message)
+      setError(e)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -58,12 +63,19 @@ export default function ResultPage() {
             placeholder="닉네임 (1~10자)"
             maxLength={10}
             value={nickname}
+            disabled={submitting}
             onChange={(e) => setNickname(e.target.value)}
           />
-          <Button onClick={handleSubmit} disabled={nickname.length === 0}>
-            랭킹 등록
+          <Button
+            onClick={handleSubmit}
+            disabled={nickname.trim().length === 0 || submitting}
+          >
+            {submitting ? '서버를 깨우는 중...' : '랭킹 등록'}
           </Button>
-          {error && <p className="result__error">{error}</p>}
+          {submitting && (
+            <p className="result__pending">서버를 깨우는 중이에요... (최대 1분)</p>
+          )}
+          {error && <p className="result__error">{getApiErrorMessage(error)}</p>}
         </div>
       )}
 

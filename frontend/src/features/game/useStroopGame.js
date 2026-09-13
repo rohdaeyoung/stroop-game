@@ -8,6 +8,7 @@ import { calcScore } from './scoreCalculator.js'
 
 const MAX_LIVES = 3
 const TOTAL_PLAY_MS = 60_000
+const MAX_SERVER_PLAY_TIME_MS = 70_000
 
 export function useStroopGame({ onGameOver }) {
   const [score, setScore] = useState(0)
@@ -46,7 +47,11 @@ export function useStroopGame({ onGameOver }) {
       maxCombo: maxComboRef.current,
       correctCount: correctCountRef.current,
       wrongCount: wrongCountRef.current,
-      playTimeMs: Date.now() - startedAt.current,
+      // 백그라운드 복귀 등으로 타이머 콜백이 늦어져도 BE 상한을 넘기지 않습니다.
+      playTimeMs: Math.min(
+        Date.now() - startedAt.current,
+        MAX_SERVER_PLAY_TIME_MS,
+      ),
       ...result,
     })
   }, [])
