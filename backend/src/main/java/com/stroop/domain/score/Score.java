@@ -7,7 +7,17 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "score", indexes = @Index(name = "idx_score_desc", columnList = "score DESC"))
+@Table(
+        name = "score",
+        indexes = {
+                // 랭킹 조회 전용 복합 인덱스.
+                // findTopRankings / countHigherRankThan 이 쓰는 정렬(점수 내림차순 → 등록 빠른 순)과
+                // 컬럼 순서가 같아야 인덱스를 탄다.
+                @Index(name = "idx_score_ranking", columnList = "score DESC, created_at ASC"),
+                // findBestScoreByNickname (신기록 판정) 용
+                @Index(name = "idx_score_nickname", columnList = "nickname")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Score {
