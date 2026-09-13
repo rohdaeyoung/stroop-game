@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS score (
     correct_count INT          NOT NULL,
     wrong_count   INT          NOT NULL,
     play_time_ms  BIGINT       NOT NULL,
-    created_at    DATETIME     NOT NULL,
+    -- 동점자 순위를 가르는 기준. 초 단위면 같은 초 제출을 구분할 수 없다.
+    created_at    DATETIME(6)  NOT NULL,
     PRIMARY KEY (id),
 
     -- 랭킹 조회용 복합 인덱스.
@@ -40,7 +41,10 @@ CREATE TABLE IF NOT EXISTS score (
 -- 1. id 가 1,2,3 으로 연속되지 않는다.
 --    TiDB 는 노드별로 AUTO_INCREMENT 구간을 미리 나눠 갖기 때문에 값이 크게 튄다.
 --    → id 를 "몇 번째 기록인지" 세는 용도로 쓰면 안 된다.
---      순위는 반드시 score / created_at 기준으로 계산한다. (ScoreRepository 참고)
+--      순위는 score / created_at 기준으로 계산한다. (ScoreRepository 참고)
+--      id 는 "점수도 시각도 완전히 같을 때" 순서를 확정하기 위한 최종 기준으로만 쓴다.
+--      이 경우 어느 쪽이 앞서든 무방하며, 목록 정렬과 순위 계산이 같은 기준을
+--      쓰는 것만이 중요하다.
 --
 -- 2. ENGINE = InnoDB 는 무시된다.
 --    TiDB 가 구문만 받아들이고 실제로는 자체 스토리지를 쓴다. 오류는 나지 않는다.

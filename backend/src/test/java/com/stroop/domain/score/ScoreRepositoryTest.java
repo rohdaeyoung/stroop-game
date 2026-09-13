@@ -61,8 +61,8 @@ class ScoreRepositoryTest {
         Score later = save("나중", 1000);
         save("아래", 500);
 
-        long firstRank = scoreRepository.countHigherRankThan(first.getScore(), first.getCreatedAt()) + 1;
-        long laterRank = scoreRepository.countHigherRankThan(later.getScore(), later.getCreatedAt()) + 1;
+        long firstRank = scoreRepository.countHigherRankThan(first.getScore(), first.getCreatedAt(), first.getId()) + 1;
+        long laterRank = scoreRepository.countHigherRankThan(later.getScore(), later.getCreatedAt(), later.getId()) + 1;
 
         // 목록에서 1위, 2위로 보이므로 순위도 1, 2 여야 한다
         assertThat(firstRank).isEqualTo(1);
@@ -81,11 +81,29 @@ class ScoreRepositoryTest {
 
         for (int i = 0; i < list.size(); i++) {
             Score s = list.get(i);
-            long rank = scoreRepository.countHigherRankThan(s.getScore(), s.getCreatedAt()) + 1;
+            long rank = scoreRepository.countHigherRankThan(s.getScore(), s.getCreatedAt(), s.getId()) + 1;
             assertThat(rank)
                     .as("%s 는 목록에서 %d번째인데 계산된 순위는 %d", s.getNickname(), i + 1, rank)
                     .isEqualTo(i + 1);
         }
+    }
+
+    @Test
+    @DisplayName("등록 시각까지 같아도 순위가 겹치지 않는다")
+    void 동일시각_순위_계산() {
+        // 빠르게 연속 저장하면 createdAt 이 완전히 같은 값으로 찍힐 수 있다.
+        // 그 경우에도 목록 순서와 계산된 순위는 어긋나면 안 된다.
+        save("A", 1000);
+        save("B", 1000);
+        save("C", 1000);
+
+        List<Score> list = scoreRepository.findTopRankings(PageRequest.of(0, 10));
+
+        List<Long> ranks = list.stream()
+                .map(s -> scoreRepository.countHigherRankThan(s.getScore(), s.getCreatedAt(), s.getId()) + 1)
+                .toList();
+
+        assertThat(ranks).containsExactly(1L, 2L, 3L);
     }
 
     @Test

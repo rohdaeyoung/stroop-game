@@ -44,7 +44,11 @@ public class Score {
     @Column(nullable = false)
     private long playTimeMs;
 
-    @Column(nullable = false, updatable = false)
+    /**
+     * 동점자 순위를 가르는 기준이라 정밀도가 중요하다.
+     * 초 단위(DATETIME)면 같은 초에 제출한 기록들의 순서를 가릴 수 없다.
+     */
+    @Column(nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
     private LocalDateTime createdAt;
 
     @Builder
