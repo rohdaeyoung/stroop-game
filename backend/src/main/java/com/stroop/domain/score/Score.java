@@ -46,24 +46,34 @@ public class Score {
 
     /**
      * 동점자 순위를 가르는 기준이라 정밀도가 중요하다.
-     * 초 단위(DATETIME)면 같은 초에 제출한 기록들의 순서를 가릴 수 없다.
+     * 초 단위면 같은 초에 제출한 기록들의 순서를 가릴 수 없으므로
+     * DB 컬럼은 DATETIME(6) 으로 둔다. (db/schema.sql 참고)
      */
-    @Column(nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
     private Score(String nickname, int score, int maxCombo,
-                  int correctCount, int wrongCount, long playTimeMs) {
+                  int correctCount, int wrongCount, long playTimeMs,
+                  LocalDateTime createdAt) {
         this.nickname = nickname;
         this.score = score;
         this.maxCombo = maxCombo;
         this.correctCount = correctCount;
         this.wrongCount = wrongCount;
         this.playTimeMs = playTimeMs;
+        this.createdAt = createdAt;
     }
 
+    /**
+     * 등록 시각은 서버가 정한다.
+     * 다만 순위 계산 테스트가 실행 속도에 좌우되면 안 되므로,
+     * 값이 미리 지정된 경우에는 그대로 둔다. (테스트에서만 사용)
+     */
     @PrePersist
     void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }
