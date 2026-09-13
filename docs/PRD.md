@@ -33,7 +33,7 @@
 | 플레이어 | 처음 보는 사람, 1명씩. 로그인 없음 |
 | 입력 | 터치 우선 (태블릿), 마우스도 가능 |
 | 기기 | `[확인 필요]` — 태블릿 몇 대? 노트북으로도 하나? |
-| 네트워크 | 배포 서버 접속 필요 ([DEPLOY.md](DEPLOY.md)) |
+| 네트워크 | 배포 서버 접속 필요 ([README 배포 계획](../README.md)) |
 | 운영 방식 | `[확인 필요]` — 행사 부스에서 운영하나? 상품이 있나? |
 
 **운영 방식이 정해져야 판단이 달라지는 것들**: 대기 화면 필요 여부, 성공/실패 기준(상품 지급 기준), 랭킹 초기화 주기.
@@ -87,14 +87,18 @@
 
 ### DB·도메인 (노대영)
 - P0 점수 저장, 랭킹 정렬 쿼리
-- P0 배포 ([DEPLOY.md](DEPLOY.md))
+- P0 배포용 설정 — `application-prod.yml`, 운영 DB 는 `ddl-auto: validate`
 
 ### 서버 (고은우)
 - P0 점수 제출·랭킹 조회 API
-- P0 잘못된 요청을 API 명세대로 응답 (완료, PR #16)
+- P0 잘못된 요청을 API 명세대로 응답 (PR #16)
+- P0 `/api/health` — 배포 헬스 체크 (#18)
+- P0 CORS 허용 주소를 환경변수(`CORS_ORIGIN`)로 — 프론트가 별도 주소로 배포됨 (#18)
 - P1 점수 값 일관성 검증 `[#20 확정 후]`
 - P1 닉네임 금칙어 필터 — 랭킹에 공개되는 값
-- P1 `/api/health` (#18)
+
+### 배포 (노대영 · 고은우)
+- P0 Render + TiDB Cloud 배포 — 구성과 체크리스트는 [README 배포 계획](../README.md)
 
 ## 7. 비기능 요구사항
 
@@ -103,6 +107,7 @@
 - **터치** — 버튼 최소 44px 이상, 더블탭 확대 방지, 연타 시 한 문제에 한 번만 입력
 - **개인정보** — **닉네임만** 수집한다. 실명·연락처는 받지 않는다
 - **닉네임 필터** — 공개 화면에 뜨므로 금칙어 차단 필요
+- **서버 콜드 스타트** — Render 무료 플랜은 15분 무요청 시 잠들고 깨는 데 30~50초 걸린다. 결과·랭킹 화면은 로딩 문구를 정직하게 보여주고, 요청 타임아웃을 60초 이상으로 두고, 연결 실패를 "기록 없음"으로 표시하지 않는다 (README 배포 계획 참고)
 
 ## 8. 범위 밖 (하지 않는 것)
 
@@ -119,7 +124,7 @@
 | Frontend | React 18, JavaScript, Vite 5, react-router-dom 6, CSS |
 | Backend | Spring Boot 3.3.4, Spring Data JPA, Java 17, Gradle |
 | DB | MySQL (로컬) / TiDB Cloud Serverless (배포) |
-| 배포 | Render — [DEPLOY.md](DEPLOY.md) |
+| 배포 | 프론트 Render Static Site / 백엔드 Render Web Service — [README 배포 계획](../README.md) |
 
 ## 10. 역할
 
@@ -130,7 +135,7 @@
 | 김민서 | 게임 엔진 |
 | 이혜원 | 결과·랭킹 |
 | 노대영 | DB·도메인, 배포 |
-| 고은우 | 서버 |
+| 고은우 | 서버, 배포 |
 
 폴더 경계와 규칙은 [AGENTS.md](../AGENTS.md) 와 `.github/CODEOWNERS` 참고.
 
@@ -143,4 +148,9 @@
 | 3 | 모드 A/B 전환 방식과 비율 | [#20](https://github.com/rohdaeyoung/stroop-game/issues/20) |
 | 4 | 서버가 거를 점수·오답·플레이시간 상한 | [#20](https://github.com/rohdaeyoung/stroop-game/issues/20) |
 | 5 | 운영 방식 — 행사 부스인지, 기기 대수, 상품 유무 | — |
-| 6 | 프론트 배포 방식 (정적 호스팅 vs jar 포함) | [#19](https://github.com/rohdaeyoung/stroop-game/issues/19) |
+
+**결정된 것**
+
+| 내용 | 결정 | 근거 |
+|---|---|---|
+| 프론트 배포 방식 | Render Static Site 로 백엔드와 분리 | README 배포 계획 (#28) |
