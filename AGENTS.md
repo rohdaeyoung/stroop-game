@@ -14,12 +14,12 @@
 ## 1. 절대 규칙
 
 1. **공용 파일은 임의로 고치지 않습니다.**
-   아래 파일을 바꿔야 할 것 같으면 **코드를 짜지 말고 멈춰서 "이 파일을 바꿔야 합니다: <이유>" 라고 사람에게 보고**합니다.
+   여러 명이 함께 쓰는 파일입니다. 바꿔야 할 것 같으면 **코드를 짜지 말고 멈춰서 "이 파일을 바꿔야 합니다: <이유>" 라고 사람에게 보고**합니다.
    - `docs/API.md`, `docs/GAME_RULES.md`
-   - `frontend/src/shared/**`, `frontend/src/App.jsx`, `frontend/src/main.jsx`
-   - `.github/**`, `backend/build.gradle`, `frontend/package.json`
+   - `frontend/src/shared/**`, `frontend/src/App.jsx`, `frontend/src/main.jsx`, `frontend/src/index.css`
+   - `README.md`, `.github/**`, `backend/build.gradle`, `frontend/package.json`
 
-   변경이 정말 필요하면 사람이 PR 제목에 `[shared]` 를 붙이고 팀에 공유합니다.
+   변경이 정말 필요하면 사람이 PR 제목에 `[shared]` 를 붙이고, 아래 표의 담당자 전원에게 확인받습니다.
 
 2. **내 파트 폴더 밖은 수정하지 않습니다.** (아래 소유권 표)
    다른 폴더를 고쳐야 하면 코드에 TODO 를 남기지 말고 **이슈나 PR 코멘트로 담당자에게 요청**합니다.
@@ -42,16 +42,30 @@
 자기 폴더 안에서 파일을 어떻게 쪼개든, 컴포넌트·훅을 어떻게 나누든, 상태 관리와 CSS 를 어떤 방식으로 하든
 **담당자가 정합니다.** 남의 폴더를 건드리지 않고 계약만 지키면 됩니다.
 
+`.github/CODEOWNERS` 와 같은 내용입니다. 둘이 어긋나면 **CODEOWNERS 가 기준**입니다.
+
+**파트별 폴더**
+
 | 경로 | 담당 |
 |---|---|
-| `frontend/src/design/**` | 나연 (디자인) |
-| `frontend/src/features/onboarding/**` | 최복순 (온보딩) |
-| `frontend/src/features/game/**` | 김민서 (게임 엔진) |
-| `frontend/src/features/result/**`, `features/ranking/**` | 이혜원 (결과·랭킹) |
-| `backend/src/main/java/com/stroop/domain/**`, `backend/src/main/resources/**` | 노대영 (DB·도메인) |
-| `backend/src/main/java/com/stroop/api/**`, `com/stroop/global/**` | 고은우 (서버) |
-| `docs/DEPLOY.md`, 배포 설정 | 노대영 (배포) |
-| `docs/API.md`, `frontend/src/shared/**`, `App.jsx`, `main.jsx` | **공용 — 팀 합의** |
+| `frontend/src/design/**` | 나연 `@nayoun030-ui` |
+| `frontend/src/features/onboarding/**` | 최복순 `@cheboksun` |
+| `frontend/src/features/game/**` | 김민서 `@alstj9653` |
+| `frontend/src/features/result/**`, `features/ranking/**` | 이혜원 `@haewon060310` |
+| `backend/src/main/java/com/stroop/domain/**`, `backend/src/main/resources/**` | 노대영 `@rohdaeyoung` |
+| `backend/src/main/java/com/stroop/api/**`, `com/stroop/global/**` | 고은우 `@Gonu19` |
+
+**공용 파일** — 여러 명이 담당하므로 전원 확인 필요
+
+| 경로 | 담당 |
+|---|---|
+| `docs/API.md` | 노대영 · 고은우 · 이혜원 |
+| `frontend/src/shared/api/` | 이혜원 · 고은우 |
+| `frontend/src/shared/constants/` | 김민서 · 나연 |
+| `frontend/src/App.jsx`, `main.jsx` | 노대영 |
+| `frontend/src/index.css` | 나연 |
+| `README.md`, `.github/**` | 노대영 |
+| 배포 (README 의 "배포 계획") | 노대영 · 고은우 |
 
 ## 3. 명령어
 
