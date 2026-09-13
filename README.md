@@ -104,6 +104,116 @@ MySQL이 먼저 떠 있어야 합니다. `backend/src/main/resources/application
 
 ---
 
+## 🚀 배포 계획 (Render + TiDB Cloud)
+
+> ⚠️ **아직 배포 전입니다.** 프론트·백엔드 개발이 끝나면 아래 구조로 합칩니다.
+> 담당: 노대영 · 고은우 / 지금은 각자 로컬 개발에 집중하세요.
+
+### 구조
+
+```
+ [ 사용자 브라우저 ]
+         │
+         ▼
+ ┌─────────────────────┐
+ │  Render Static Site │   frontend/  (Vite 빌드 결과물)
+ │  어흥-색에-속지-마     │
+ └──────────┬──────────┘
+            │  /api/* 호출
+            ▼
+ ┌─────────────────────┐
+ │  Render Web Service │   backend/  (Spring Boot, Docker 또는 Gradle)
+ │  stroop-api         │
+ └──────────┬──────────┘
+            │  MySQL 프로토콜 + TLS
+            ▼
+ ┌─────────────────────┐
+ │   TiDB Cloud        │   MySQL 호환 서버리스 DB
+ │   Serverless        │
+ └─────────────────────┘
+```
+
+| 레이어 | 서비스 | 비고 |
+|---|---|---|
+| Frontend | Render **Static Site** | Vite 빌드 → 정적 호스팅. 무료 플랜에 콜드 스타트 없음 |
+| Backend | Render **Web Service** | Spring Boot. 무료 플랜은 **콜드 스타트 있음** (아래 주의사항) |
+| Database | **TiDB Cloud Serverless** | MySQL 8.0 호환. 무료 티어 제공 |
+
+---
+
+### 🔴 반드시 알아야 할 주의사항
+
+#### 1. Render 무료 플랜 콜드 스타트 (제일 중요)
+
+15분간 요청이 없으면 서버가 잠듭니다. 다음 요청은 **30~50초** 걸립니다.
+
+랭킹 화면에서 이게 그대로 터집니다:
+
+- ❌ 사용자 입장: "랭킹이 안 뜨네? 고장났나?" → 이탈
+- ❌ fetch 타임아웃이 짧으면 **에러로 오인** → "서버 오류" 문구 노출
+
+**대응 (이혜원 · 고은우 확인 필요)**
+- [ ] 랭킹/결과 화면 로딩 문구를 정직하게: `"서버를 깨우는 중이에요... (최대 1분)"`
+- [ ] fetch 타임아웃을 **60초 이상**으로 (짧으면 멀쩡한 응답을 실패로 처리함)
+- [ ] **연결 실패**와 **진짜 에러**를 구분해서 처리 — 잠든 서버를 "기록 없음"으로 표시하면 안 됨
+- [ ] 온보딩 화면 진입 시 백그라운드로 `GET /api/rankings` 한 번 찔러서 미리 깨우기 (워밍업)
+
+> 💡 워밍업 팁: 사용자가 온보딩 화면을 읽고 게임을 1분 플레이하는 동안 서버가 깨어납니다.
+> 결과 화면에 도달할 때쯤이면 이미 준비 완료 상태가 됩니다.
+
+#### 2. TiDB Cloud는 MySQL "호환"이지 MySQL이 아님
+
+로컬 MySQL에서 되던 게 TiDB에서 안 될 수 있습니다.
+
+- [ ] **TLS 연결 필수** — JDBC URL에 `useSSL=true&requireSSL=true` 필요
+- [ ] **FOREIGN KEY 제약이 제한적** — 지금은 테이블이 `score` 하나라 문제없지만, 나중에 테이블 추가 시 주의
+- [ ] **AUTO_INCREMENT가 연속이 아님** — id가 1,2,3이 아니라 튈 수 있음. **id를 순위 계산에 쓰지 말 것** (현재 코드는 `score` 컬럼 기준이라 OK)
+- [ ] 배포 전에 **TiDB에 한 번 붙여서 전체 기능 테스트** 필수
+
+#### 3. 환경변수 (절대 코드에 하드코딩 금지)
+
+Render 대시보드의 Environment에 등록합니다.
+
+**Backend (Web Service)**
+```
+SPRING_PROFILES_ACTIVE = prod
+DB_URL      = jdbc:mysql://<TiDB호스트>:4000/stroop?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DB_USERNAME = <TiDB 사용자명>
+DB_PASSWORD = <TiDB 비밀번호>
+CORS_ORIGIN = https://<프론트주소>.onrender.com
+```
+
+**Frontend (Static Site)**
+```
+VITE_API_BASE_URL = https://stroop-api.onrender.com
+```
+
+> 로컬 개발용 `application-local.yml` 은 `.gitignore` 처리되어 있습니다. **DB 비밀번호를 커밋하지 마세요.**
+> public 레포라서 한 번 올라가면 누구나 볼 수 있습니다.
+
+---
+
+### 배포 전 체크리스트
+
+**공통**
+- [ ] `main` 브랜치에 모든 기능이 머지 완료
+- [ ] 로컬에서 프론트-백 연동 전체 플로우 테스트 (온보딩 → 게임 → 결과 제출 → 랭킹)
+
+**Backend (고은우 · 노대영)**
+- [ ] `application-prod.yml` 작성 (환경변수 주입 방식)
+- [ ] `ddl-auto: update` → **`validate`** 로 변경 (운영 DB 스키마 사고 방지)
+- [ ] CORS 허용 주소를 배포된 프론트 주소로 변경 (현재 `localhost:5173` 하드코딩)
+- [ ] TiDB Cloud에 스키마 생성 (`backend/src/main/resources/schema.sql`)
+- [ ] Health check 엔드포인트 추가 (Render가 서버 상태 확인용)
+
+**Frontend (전원)**
+- [ ] API 주소를 환경변수로 분리 (현재 `shared/api/client.js` 의 `/api` 프록시는 개발 전용)
+- [ ] `npm run build` 성공 확인
+- [ ] 모바일 실기기에서 터치 반응 테스트
+- [ ] 콜드 스타트 로딩 UI 적용 (위 1번 항목)
+
+---
+
 ## 📄 문서
 
 - [API 명세](docs/API.md) — FE ↔ BE 계약. **여기 바뀌면 양쪽 다 영향** 받으니 반드시 합의 후 수정.
