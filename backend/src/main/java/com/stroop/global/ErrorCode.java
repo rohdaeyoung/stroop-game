@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임은 1~10자여야 합니다."),
     INVALID_SCORE(HttpStatus.BAD_REQUEST, "점수가 올바르지 않습니다."),
     SCORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기록을 찾을 수 없습니다."),
