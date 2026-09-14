@@ -19,7 +19,7 @@ Base URL: `http://localhost:8080`
   "maxCombo": 17,
   "correctCount": 42,
   "wrongCount": 3,
-  "playTimeMs": 61000
+  "playTimeMs": 31000
 }
 ```
 

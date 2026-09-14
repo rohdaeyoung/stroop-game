@@ -7,7 +7,7 @@ import { getDifficulty } from './difficulty.js'
 import { calcScore } from './scoreCalculator.js'
 
 const MAX_LIVES = 3
-const TOTAL_PLAY_MS = 60_000
+const TOTAL_PLAY_MS = 30_000
 
 export function useStroopGame({ onGameOver }) {
   const [score, setScore] = useState(0)

@@ -24,7 +24,7 @@ class ScoreServiceTest {
     ScoreService scoreService;
 
     private static ScoreSubmitRequest request(int score) {
-        return new ScoreSubmitRequest("대영", score, 17, 42, 2, 60000L);
+        return new ScoreSubmitRequest("대영", score, 17, 42, 2, 30000L);
     }
 
     private void 저장은_그대로_돌려준다() {
