@@ -1,9 +1,14 @@
 # 👤 담당: 노대영 (DB 설정)
+#
+# 프로필별 설정
+#   local : application-local.yml       (각자 로컬 MySQL, gitignore 처리됨)
+#   prod  : application-prod.yml        (Render + TiDB Cloud, 환경변수 주입)
 spring:
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
   jpa:
     hibernate:
+      # local 전용. prod 에서는 validate 로 덮어쓴다.
       ddl-auto: update
     properties:
       hibernate:

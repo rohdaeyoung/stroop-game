@@ -38,6 +38,8 @@ Base URL: `http://localhost:8080`
 
 `GET /api/rankings?limit=10`
 
+`limit` 은 **1~100** (생략하면 10). 범위를 벗어나면 `400 INVALID_REQUEST`.
+
 **Response** `200 OK`
 ```json
 {
@@ -68,7 +70,7 @@ Base URL: `http://localhost:8080`
 
 | HTTP | code | 상황 |
 |---|---|---|
-| 400 | `INVALID_REQUEST` | 파라미터 타입 오류, 필수 파라미터 누락, 깨진 JSON, `limit` 범위 밖 |
+| 400 | `INVALID_REQUEST` | 파라미터 타입 오류(`?scoreId=abc`), 필수 파라미터 누락, 깨진 JSON, `limit` 범위 밖 |
 | 400 | `INVALID_NICKNAME` | 닉네임 길이/문자 오류 |
 | 400 | `INVALID_SCORE` | 점수가 음수이거나 비정상 |
 | 404 | `SCORE_NOT_FOUND` | scoreId 없음 |

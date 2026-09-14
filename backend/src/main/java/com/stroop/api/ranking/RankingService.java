@@ -18,10 +18,18 @@ import java.util.stream.IntStream;
 @Transactional(readOnly = true)
 public class RankingService {
 
+    /** 한 번에 내려줄 수 있는 최대 개수. docs/API.md 참고 */
+    private static final int MAX_LIMIT = 100;
+
     private final ScoreRepository scoreRepository;
 
     public RankingListResponse getTopRankings(int limit) {
-        List<Score> scores = scoreRepository.findTopRankings(PageRequest.of(0, Math.min(limit, 100)));
+        // limit=0 이면 PageRequest 가 예외를 던져 500 이 나간다. 잘못된 요청은 400 으로 알려준다.
+        if (limit < 1 || limit > MAX_LIMIT) {
+            throw new ApiException(ErrorCode.INVALID_REQUEST);
+        }
+
+        List<Score> scores = scoreRepository.findTopRankings(PageRequest.of(0, limit));
 
         List<RankingItem> items = IntStream.range(0, scores.size())
                 .mapToObj(i -> {

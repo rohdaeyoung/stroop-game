@@ -1,5 +1,10 @@
-# 이 파일을 application-local.yml 로 복사한 뒤 본인 DB 정보로 채우세요.
-# application-local.yml 은 .gitignore 처리되어 있습니다 (비밀번호 커밋 방지).
+# 👤 담당: 노대영
+#
+# 이 파일을 application-local.yml 로 복사한 뒤 본인 DB 정보로 채운다.
+#   cp application-local.yml.example application-local.yml
+#
+# application-local.yml 은 .gitignore 처리되어 있다.
+# ⚠️ public 레포이므로 DB 비밀번호가 커밋되면 누구나 볼 수 있다.
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/stroop?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
