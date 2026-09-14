@@ -1,0 +1,32 @@
+# 👤 담당: 노대영 — 운영(Render + TiDB Cloud) DB 설정
+#
+# 값은 전부 Render 대시보드의 Environment 에서 주입한다.
+# 이 파일에는 실제 접속 정보를 절대 쓰지 않는다. (public 레포)
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # TiDB Cloud Serverless 는 유휴 연결을 끊는다.
+      # 커넥션 풀이 죽은 연결을 붙잡고 있으면 첫 요청이 실패하므로 짧게 잡는다.
+      maximum-pool-size: 5
+      minimum-idle: 0
+      idle-timeout: 30000
+      max-lifetime: 280000
+      connection-timeout: 30000
+
+  jpa:
+    # ⚠️ 운영에서는 절대 update/create 를 쓰지 않는다.
+    # 스키마 변경은 schema.sql 로 직접 적용하고, 여기서는 검증만 한다.
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+logging:
+  level:
+    org.hibernate.SQL: warn
