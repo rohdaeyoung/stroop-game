@@ -10,8 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,10 +62,26 @@ class ScoreServiceTest {
     void 순위() {
         given(scoreRepository.findBestScoreByNickname("대영")).willReturn(0);
         저장은_그대로_돌려준다();
-        given(scoreRepository.countHigherThan(1250)).willReturn(3L);
+        given(scoreRepository.countHigherRankThan(eq(1250), any(), any())).willReturn(3L);
 
         ScoreSubmitResponse response = scoreService.submit(request(1250));
 
         assertThat(response.rank()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("순위는 점수만이 아니라 저장된 기록의 등록 시각까지 넘겨 계산한다 (동점자 구분)")
+    void 순위_계산에_등록시각_전달() {
+        LocalDateTime savedAt = LocalDateTime.of(2026, 9, 14, 13, 0, 0);
+        given(scoreRepository.findBestScoreByNickname("대영")).willReturn(0);
+        given(scoreRepository.save(any(Score.class))).willReturn(Score.builder()
+                .nickname("대영").score(1250).maxCombo(17)
+                .correctCount(42).wrongCount(2).playTimeMs(30000L)
+                .createdAt(savedAt)
+                .build());
+
+        scoreService.submit(request(1250));
+
+        then(scoreRepository).should().countHigherRankThan(eq(1250), eq(savedAt), any());
     }
 }

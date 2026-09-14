@@ -8,6 +8,12 @@ package com.stroop.api.score;
  */
 final class ScoreRules {
 
+    /**
+     * 닉네임은 한글·영문·숫자만. 공백·특수문자·이모지는 거부한다. (Figma 06 닉네임 입력)
+     * 공개 랭킹에 그대로 노출되는 값이다. 자음·모음만 쓴 닉네임(ㅋㅋ)도 한글로 보고 허용한다.
+     */
+    static final String NICKNAME_PATTERN = "^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9]+$";
+
     /** 비정상 점수 차단 */
     static final long MAX_SCORE = 300_000;
 
