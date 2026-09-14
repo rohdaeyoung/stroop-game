@@ -26,7 +26,9 @@ public class ScoreService {
                 .playTimeMs(request.playTimeMs())
                 .build());
 
-        long rank = scoreRepository.countHigherThan(saved.getScore()) + 1;
+        // 랭킹 목록과 같은 기준(점수 → 먼저 등록 → id)으로 세야 동점자 순위가 목록과 일치한다
+        long rank = scoreRepository.countHigherRankThan(
+                saved.getScore(), saved.getCreatedAt(), saved.getId()) + 1;
 
         return new ScoreSubmitResponse(saved.getId(), rank, request.score() > previousBest);
     }
