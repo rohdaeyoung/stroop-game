@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(
@@ -62,7 +63,7 @@ public class Score {
         this.correctCount = correctCount;
         this.wrongCount = wrongCount;
         this.playTimeMs = playTimeMs;
-        this.createdAt = createdAt;
+        this.createdAt = truncate(createdAt);
     }
 
     /**
@@ -73,7 +74,22 @@ public class Score {
     @PrePersist
     void onCreate() {
         if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
+            this.createdAt = truncate(LocalDateTime.now());
         }
+    }
+
+    /**
+     * 등록 시각을 DB 컬럼과 같은 정밀도(마이크로초)로 맞춘다.
+     *
+     * <p>LocalDateTime.now() 는 나노초까지 담지만 created_at 은 DATETIME(6) 이라
+     * DB 가 나머지 자리를 <b>반올림</b>한다. 잘라두지 않으면 저장 직후
+     * 메모리에 남은 값과 DB 에 들어간 값이 달라진다.
+     *
+     * <p>반올림이 내림이면 DB 값이 메모리 값보다 작아져,
+     * {@code created_at < :createdAt} 으로 순위를 셀 때 <b>자기 자신이 걸려
+     * 순위가 1 크게</b> 나온다. (약 50% 확률)
+     */
+    private static LocalDateTime truncate(LocalDateTime time) {
+        return time == null ? null : time.truncatedTo(ChronoUnit.MICROS);
     }
 }

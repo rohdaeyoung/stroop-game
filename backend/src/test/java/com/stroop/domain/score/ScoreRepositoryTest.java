@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,6 +125,51 @@ class ScoreRepositoryTest {
                     .as("%s 는 목록에서 %d번째", s.getNickname(), i + 1)
                     .isEqualTo(i + 1);
         }
+    }
+
+    @Test
+    @DisplayName("저장 직후 자기 자신은 상위 기록으로 세지 않는다 — 나노초 반올림(내림) 케이스")
+    void 자기자신_제외_내림() {
+        // created_at 은 DATETIME(6). 마이크로초 아래 자리가 500 미만이면 DB 가 내림한다.
+        // 잘라두지 않으면 저장값 < 메모리값 이 되어 자기 자신이 상위로 잡힌다.
+        Score saved = save("대영", 1000, BASE.withNano(123_456_400));
+
+        assertThat(scoreRepository.countHigherRankThan(
+                saved.getScore(), saved.getCreatedAt(), saved.getId())).isZero();
+    }
+
+    @Test
+    @DisplayName("저장 직후 자기 자신은 상위 기록으로 세지 않는다 — 나노초 반올림(올림) 케이스")
+    void 자기자신_제외_올림() {
+        Score saved = save("대영", 1000, BASE.withNano(123_456_789));
+
+        assertThat(scoreRepository.countHigherRankThan(
+                saved.getScore(), saved.getCreatedAt(), saved.getId())).isZero();
+    }
+
+    @Test
+    @DisplayName("등록 시각은 DB 정밀도(마이크로초)에 맞춰 잘려서 저장된다")
+    void 등록시각_정밀도() {
+        Score saved = save("대영", 1000, BASE.withNano(123_456_789));
+
+        // 나노초 자리가 남아 있으면 DB 반올림과 어긋난다
+        assertThat(saved.getCreatedAt())
+                .isEqualTo(saved.getCreatedAt().truncatedTo(ChronoUnit.MICROS));
+        assertThat(saved.getCreatedAt().getNano()).isEqualTo(123_456_000);
+    }
+
+    @Test
+    @DisplayName("서버가 채운 등록 시각도 마이크로초로 잘린다")
+    void 기본_등록시각_정밀도() {
+        Score saved = scoreRepository.saveAndFlush(Score.builder()
+                .nickname("대영").score(1000).maxCombo(5)
+                .correctCount(10).wrongCount(0).playTimeMs(30_000)
+                .build());
+
+        assertThat(saved.getCreatedAt())
+                .isEqualTo(saved.getCreatedAt().truncatedTo(ChronoUnit.MICROS));
+        assertThat(scoreRepository.countHigherRankThan(
+                saved.getScore(), saved.getCreatedAt(), saved.getId())).isZero();
     }
 
     @Test
