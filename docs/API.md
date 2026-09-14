@@ -65,7 +65,7 @@ Base URL: `http://localhost:8080`
 ## 공통 에러 포맷
 
 ```json
-{ "code": "INVALID_NICKNAME", "message": "닉네임은 1~10자여야 합니다." }
+{ "code": "INVALID_NICKNAME", "message": "닉네임은 한글·영문·숫자 1~10자여야 합니다." }
 ```
 
 | HTTP | code | 상황 |
