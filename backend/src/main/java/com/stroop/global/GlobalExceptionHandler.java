@@ -5,12 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -41,15 +44,24 @@ public class GlobalExceptionHandler {
         return toResponse(code);
     }
 
-    /** 파라미터 타입 불일치, 필수 파라미터 누락, 깨진 JSON — 클라이언트 잘못이므로 400 */
+    /** 파라미터 타입 불일치, 필수 파라미터·파일 누락, 깨진 JSON, 잘못된 Content-Type — 클라이언트 잘못이므로 400 */
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class
+            MissingServletRequestPartException.class,
+            HttpMessageNotReadableException.class,
+            HttpMediaTypeNotSupportedException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
         log.warn("잘못된 요청: {}", e.getMessage());
         return toResponse(ErrorCode.INVALID_REQUEST);
+    }
+
+    /** 업로드 크기가 Spring 한도(기본 1MB)를 넘으면 컨트롤러에 닿기 전에 여기로 온다 */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooLarge(MaxUploadSizeExceededException e) {
+        log.warn("업로드 크기 초과: {}", e.getMessage());
+        return toResponse(ErrorCode.PHOTO_TOO_LARGE);
     }
 
     /** 예상 못 한 예외. 로그를 남기지 않으면 장애 원인을 추적할 수 없다. */
