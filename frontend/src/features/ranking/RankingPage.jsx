@@ -4,7 +4,7 @@
 // "어흥샷 찍으러 가기"를 누르면 같은 라우트 안에서 카메라(09) → QR(10) 단계로 이어집니다.
 //
 // 디자인 미리보기: 아직 실제 제출 기록이 없어서 목록이 비어있을 때, 화면이 채워진 모습을
-// 보고 싶으면 주소 끝에 ?demo=in (순위권 안) 또는 ?demo=out (순위권 밖 고정 카드)을 붙여서
+// 보고 싶으면 주소 끝에 ?demo=in (순위권 안) / ?demo=out (순위권 밖 고정 카드) / ?demo=qr (QR 화면)을 붙여서
 // 열면 mockRankings.js 의 더미 데이터로 보여줍니다. 실제 서비스 동작에는 영향 없어요.
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -15,6 +15,21 @@ import QrStep from './QrStep.jsx'
 import { useKioskScale } from '../../shared/hooks/useKioskScale.js'
 import { MOCK_TOP10_WITH_ME, MOCK_TOP10_WITHOUT_ME, MOCK_MY_PINNED } from './mockRankings.js'
 import './Ranking.css'
+
+/** 카메라가 없는 환경에서 QR 화면을 확인하기 위한 가짜 사진 (?demo=qr) */
+function makeDemoPhoto() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 720
+  canvas.height = 960
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#ff5363'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 72px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('어흥샷 데모', canvas.width / 2, canvas.height / 2)
+  return canvas.toDataURL('image/jpeg', 0.85)
+}
 
 export default function RankingPage() {
   const navigate = useNavigate()
@@ -28,7 +43,10 @@ export default function RankingPage() {
     demoMode === 'out' ? MOCK_MY_PINNED.nickname : demoMode === 'in' ? '타이거짱 (나)' : state?.myNickname ?? null
   const myScore = demoMode === 'out' ? MOCK_MY_PINNED.score : demoMode === 'in' ? 2480 : state?.myScore ?? null
 
-  const [step, setStep] = useState('list') // 'list' | 'camera' | 'qr'
+  const [step, setStep] = useState(demoMode === 'qr' ? 'qr' : 'list') // 'list' | 'camera' | 'qr'
+  // 촬영한 사진(dataURL). QR 화면에서 서버로 올립니다.
+  // ?demo=qr 로 들어오면 카메라 없이도 QR 화면을 볼 수 있게 가짜 사진을 씁니다.
+  const [photo, setPhoto] = useState(demoMode === 'qr' ? makeDemoPhoto() : null)
   const [rankings, setRankings] = useState([])
   const [loading, setLoading] = useState(!demoMode)
   const [error, setError] = useState(null)
@@ -110,10 +128,16 @@ export default function RankingPage() {
         )}
 
         {step === 'camera' && (
-          <CameraStep onNext={() => setStep('qr')} onSkip={() => navigate('/')} />
+          <CameraStep
+            onNext={(captured) => {
+              setPhoto(captured)
+              setStep('qr')
+            }}
+            onSkip={() => navigate('/')}
+          />
         )}
 
-        {step === 'qr' && <QrStep onHome={() => navigate('/')} />}
+        {step === 'qr' && <QrStep photo={photo} onHome={() => navigate('/')} />}
       </div>
     </div>
   )

@@ -103,7 +103,9 @@ export default function CameraStep({ onNext, onSkip }) {
     ctx.translate(canvas.width, 0)
     ctx.scale(-1, 1) // 셀피처럼 좌우 반전해서 저장
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    setPhoto(canvas.toDataURL('image/png'))
+    // 서버 보관 용량이 1장당 1MB 라 PNG 대신 JPEG 로 저장합니다.
+    // 720x960 PNG 는 쉽게 1MB 를 넘습니다. (docs/API.md 인증샷 업로드)
+    setPhoto(canvas.toDataURL('image/jpeg', 0.85))
     streamRef.current?.getTracks().forEach((t) => t.stop())
     setPhase('captured')
   }
