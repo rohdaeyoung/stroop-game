@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +40,7 @@ class RankingServiceTest {
                 .maxCombo(10)
                 .correctCount(20)
                 .wrongCount(1)
-                .playTimeMs(61000L)
+                .playTimeMs(31000L)
                 .build();
     }
 
@@ -82,7 +83,7 @@ class RankingServiceTest {
     @DisplayName("내 순위와 백분위를 계산한다")
     void 내_순위_계산() {
         given(scoreRepository.findById(12L)).willReturn(Optional.of(score("대영", 1250)));
-        given(scoreRepository.countHigherThan(1250)).willReturn(3L);
+        given(scoreRepository.countHigherRankThan(eq(1250), any(), any())).willReturn(3L);
         given(scoreRepository.count()).willReturn(137L);
 
         MyRankResponse response = rankingService.getMyRank(12L);

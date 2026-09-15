@@ -7,7 +7,9 @@ import { getDifficulty } from './difficulty.js'
 import { calcScore } from './scoreCalculator.js'
 
 const MAX_LIVES = 3
-const TOTAL_PLAY_MS = 60_000
+const TOTAL_PLAY_MS = 30_000
+// BE 의 ScoreRules.MAX_PLAY_TIME_MS 와 같은 값을 유지합니다. (30초 + 여유 10초)
+const MAX_SERVER_PLAY_TIME_MS = 40_000
 
 export function useStroopGame({ onGameOver }) {
   const [score, setScore] = useState(0)
@@ -23,58 +25,122 @@ export function useStroopGame({ onGameOver }) {
 
   const startedAt = useRef(Date.now())
   const questionStartedAt = useRef(Date.now())
+  const answeredRef = useRef(false)
+  const endedRef = useRef(false)
+  const onGameOverRef = useRef(onGameOver)
 
-  const endGame = useCallback(() => {
-    onGameOver({
-      score, maxCombo, correctCount, wrongCount,
-      playTimeMs: Date.now() - startedAt.current,
+  // 종료 시점에 최신 상태를 사용하기 위한 refs입니다.
+  const scoreRef = useRef(0)
+  const comboRef = useRef(0)
+  const maxComboRef = useRef(0)
+  const livesRef = useRef(MAX_LIVES)
+  const correctCountRef = useRef(0)
+  const wrongCountRef = useRef(0)
+
+  onGameOverRef.current = onGameOver
+
+  const endGame = useCallback((result = {}) => {
+    if (endedRef.current) return
+    endedRef.current = true
+
+    onGameOverRef.current({
+      score: scoreRef.current,
+      maxCombo: maxComboRef.current,
+      correctCount: correctCountRef.current,
+      wrongCount: wrongCountRef.current,
+      // 백그라운드 복귀 등으로 타이머 콜백이 늦어져도 BE 상한을 넘기지 않습니다.
+      playTimeMs: Math.min(
+        Date.now() - startedAt.current,
+        MAX_SERVER_PLAY_TIME_MS,
+      ),
+      ...result,
     })
-  }, [score, maxCombo, correctCount, wrongCount, onGameOver])
+  }, [])
 
-  // TODO(민서): 다음 문제로 넘어가는 함수
-  const nextQuestion = useCallback(() => {
-    const next = getDifficulty(correctCount + 1)
+  const nextQuestion = useCallback((nextCorrectCount) => {
+    const next = getDifficulty(nextCorrectCount)
     setQuiz(createQuiz(next.choiceCount))
     setTimeLeft(next.limitMs)
     questionStartedAt.current = Date.now()
-  }, [correctCount])
+    answeredRef.current = false
+  }, [])
 
-  // TODO(민서): 터치 판정
   const answer = useCallback((choiceKey) => {
+    if (endedRef.current || answeredRef.current) return
+
+    const now = Date.now()
+    const totalElapsed = now - startedAt.current
+    const elapsed = now - questionStartedAt.current
+
+    // 전역 30초 또는 현재 문제 제한시간이 지나면 입력을 받지 않습니다.
+    if (totalElapsed >= TOTAL_PLAY_MS || elapsed >= difficulty.limitMs) {
+      endGame()
+      return
+    }
+
+    answeredRef.current = true
+
     const answerKey =
       quiz.mode === MODE.COLOR ? quiz.inkColor.key : quiz.word.key
     const isCorrect = choiceKey === answerKey
-    const elapsed = Date.now() - questionStartedAt.current
 
     if (isCorrect) {
-      const gained = calcScore({ combo, remainMs: difficulty.limitMs - elapsed })
-      setScore((s) => s + gained)
-      setCombo((c) => {
-        const next = c + 1
-        setMaxCombo((m) => Math.max(m, next))
-        return next
+      const gained = calcScore({
+        combo: comboRef.current,
+        remainMs: difficulty.limitMs - elapsed,
       })
-      setCorrectCount((c) => c + 1)
-      nextQuestion()
+      const nextScore = scoreRef.current + gained
+      const nextCombo = comboRef.current + 1
+      const nextCorrectCount = correctCountRef.current + 1
+      const nextMaxCombo = Math.max(maxComboRef.current, nextCombo)
+
+      scoreRef.current = nextScore
+      comboRef.current = nextCombo
+      maxComboRef.current = nextMaxCombo
+      correctCountRef.current = nextCorrectCount
+
+      setScore(nextScore)
+      setCombo(nextCombo)
+      setMaxCombo(nextMaxCombo)
+      setCorrectCount(nextCorrectCount)
+      nextQuestion(nextCorrectCount)
     } else {
-      setScore((s) => Math.max(0, s - 50))
+      const nextScore = Math.max(0, scoreRef.current - 50)
+      const nextWrongCount = wrongCountRef.current + 1
+      const nextLives = livesRef.current - 1
+
+      scoreRef.current = nextScore
+      comboRef.current = 0
+      livesRef.current = nextLives
+      wrongCountRef.current = nextWrongCount
+
+      setScore(nextScore)
       setCombo(0)
-      setWrongCount((w) => w + 1)
-      setLives((l) => l - 1)
-      nextQuestion()
+      setWrongCount(nextWrongCount)
+      setLives(nextLives)
+
+      if (nextWrongCount >= MAX_LIVES) {
+        endGame({
+          score: nextScore,
+          maxCombo: maxComboRef.current,
+          correctCount: correctCountRef.current,
+          wrongCount: nextWrongCount,
+        })
+      } else {
+        nextQuestion(correctCountRef.current)
+      }
     }
-  }, [quiz, combo, difficulty, nextQuestion])
+  }, [quiz, difficulty, endGame, nextQuestion])
 
   // 문제별 카운트다운
   useEffect(() => {
     if (timeLeft <= 0) {
-      setLives((l) => l - 1)
-      nextQuestion()
+      endGame()
       return
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 100), 100)
     return () => clearTimeout(id)
-  }, [timeLeft, nextQuestion])
+  }, [timeLeft, quiz, endGame])
 
   // 종료 조건: 목숨 소진
   useEffect(() => {

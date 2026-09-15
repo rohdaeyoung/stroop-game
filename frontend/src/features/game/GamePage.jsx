@@ -36,7 +36,7 @@ export default function GamePage() {
           <button
             key={choice.key}
             className="game__choice"
-            onPointerDown={() => game.answer(choice.key)}
+            onClick={() => game.answer(choice.key)}
           >
             {choice.label}
           </button>
