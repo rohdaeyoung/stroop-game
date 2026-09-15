@@ -257,3 +257,49 @@
 .onboarding__nickname-field--error + .onboarding__nickname-hint {
   color: var(--color-danger);
 }
+
+/* ===== 태블릿 레이아웃 (PRD: 터치 우선, 태블릿) =====
+   .app-shell 최대폭(480px)은 나연님 소유 index.css 라 여기서 못 고칩니다.
+   온보딩 화면이 떠 있을 때만 :has() 로 폭을 넓히고, 폰트 토큰은
+   .onboarding 스코프 안에서만 재정의합니다.
+   game/result/ranking 화면까지 넓히려면 index.css 를 팀 합의로 고쳐야 해요. */
+@media (min-width: 768px) {
+  .app-shell:has(> .onboarding) {
+    max-width: 720px;
+  }
+
+  .onboarding {
+    --font-size-sm: 16px;
+    --font-size-md: 22px;
+    --font-size-lg: 34px;
+    --font-size-xl: 80px;
+    gap: var(--space-5);
+    padding: var(--space-5);
+  }
+
+  .onboarding__mascot {
+    width: min(50%, 380px);
+  }
+
+  .onboarding__start-cta {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .onboarding__example {
+    padding: var(--space-5);
+    gap: var(--space-3);
+  }
+
+  .onboarding__example-choices {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+  }
+
+  .onboarding__example-choice {
+    padding: var(--space-4);
+  }
+
+  .onboarding__nickname-field {
+    padding: var(--space-4);
+  }
+}
