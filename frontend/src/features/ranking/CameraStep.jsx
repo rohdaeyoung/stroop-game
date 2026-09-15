@@ -155,6 +155,12 @@ export default function CameraStep({ onNext, onSkip }) {
         {phase === 'captured' && '어흥샷 완성! 마음에 들어요?'}
       </p>
 
+      {/* 피그마에 있던 손그림 화살표 — 셔터를 누르라고 가리키는 장식. 사진 카드보다 먼저 그려서
+          피그마처럼 사진 카드 가장자리에 살짝 가려지게 합니다. 누를 수 있는 동안만 보여줍니다 */}
+      {phase === 'live' && (
+        <img className="camera__shutter-arrows" src={shutterArrows} alt="" aria-hidden="true" />
+      )}
+
       <div className={`camera__polaroid camera__polaroid--${frame}`}>
         {photo ? (
           <img className="camera__photo" src={photo} alt="촬영된 인증샷" />
@@ -176,11 +182,6 @@ export default function CameraStep({ onNext, onSkip }) {
         disabled={phase !== 'live'}
         aria-label="촬영 시작"
       />
-
-      {/* 피그마에 있던 손그림 화살표 — 셔터를 누르라고 가리키는 장식. 누를 수 있는 동안만 보여줍니다 */}
-      {phase === 'live' && (
-        <img className="camera__shutter-arrows" src={shutterArrows} alt="" aria-hidden="true" />
-      )}
 
       <div className="camera__actions">
         {phase === 'captured' ? (
