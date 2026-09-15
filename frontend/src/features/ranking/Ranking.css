@@ -377,9 +377,12 @@
 }
 
 .camera__polaroid {
+  /* 아래쪽 여백을 56px + 날짜 텍스트 margin-top 으로 이중으로 잡고 있어서
+     카드가 피그마(645px)보다 36px 더 길었고, 그만큼 화면 위쪽 여백을 잡아먹어
+     "어흥샷" 위쪽이 짤려 보였어요 — 18px 균등 패딩으로 맞춰서 해결 */
   position: relative;
   width: 860px;
-  padding: 18px 18px 56px;
+  padding: 18px;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
@@ -485,7 +488,7 @@
 }
 
 .camera__date {
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 20px;
