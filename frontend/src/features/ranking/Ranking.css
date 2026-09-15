@@ -199,8 +199,305 @@
 }
 .ranking__cta:active { transform: scale(0.97); }
 
-.ranking__camera-notice {
+/* ── 09 인증샷 촬영 (Camera) / 10 QR 코드 발송 (QR) — ranking__screen과 같은 캔버스 위에서 단계 전환 */
+.camera__screen,
+.qr__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+}
+
+.camera__screen::before,
+.camera__screen::after,
+.qr__screen::before,
+.qr__screen::after {
+  content: '';
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.camera__screen::before,
+.qr__screen::before {
+  left: -220px;
+  top: -220px;
+  background: radial-gradient(circle, #2ec770, transparent 70%);
+}
+.camera__screen::after,
+.qr__screen::after {
+  right: -220px;
+  bottom: -220px;
+  background: radial-gradient(circle, #ff2e78, transparent 70%);
+}
+
+.camera__screen > *,
+.qr__screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 프레임 선택 사이드바 */
+.camera__frame-selector {
+  position: absolute;
+  left: 70px;
+  top: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 148px;
+  text-align: left;
+}
+.camera__frame-selector-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 20px;
+}
+.camera__frame-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.camera__frame-option--selected {
+  border: 3px solid #ff2e78;
+  background: rgba(255, 255, 255, 0.16);
+}
+.camera__frame-preview {
+  display: block;
+  width: 100%;
+  height: 66px;
+  border-radius: 8px;
+}
+.camera__frame-preview--basic { background: #fff; }
+.camera__frame-preview--dots {
+  background-color: #fff;
+  background-image: radial-gradient(circle, #ff2e78 3px, transparent 3.5px);
+  background-size: 12px 12px;
+}
+.camera__frame-preview--denim {
+  background: repeating-linear-gradient(45deg, #2c5aa0, #2c5aa0 6px, #1e4079 6px, #1e4079 12px);
+}
+.camera__frame-preview--stamp {
+  background: #fff;
+  border: 3px dashed #ff5252;
+}
+.camera__frame-check {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff2e78;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.camera__badge {
+  display: inline-flex;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid #2ec770;
+  background: rgba(46, 199, 112, 0.18);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.camera__title {
   margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 56px;
+}
+
+.camera__subtitle {
+  margin: 0;
+  min-height: 30px;
+  font-weight: 500;
+  font-size: 22px;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
+}
+
+.camera__polaroid {
+  position: relative;
+  width: 380px;
+  padding: 18px 18px 56px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
+}
+.camera__polaroid--dots {
+  background-color: #fff;
+  background-image: radial-gradient(circle, #ff2e78 4px, transparent 4.5px);
+  background-size: 18px 18px;
+}
+.camera__polaroid--denim {
+  background: repeating-linear-gradient(45deg, #2c5aa0, #2c5aa0 10px, #1e4079 10px, #1e4079 20px);
+}
+.camera__polaroid--denim .camera__date { color: #fff; }
+.camera__polaroid--stamp {
+  background: #fff;
+  border: 6px dashed #ff5252;
+}
+.camera__polaroid--stamp::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: -8px;
+  width: 66px;
+  height: 20px;
+  background: #ff5252;
+  transform: rotate(-35deg);
+}
+
+.camera__video,
+.camera__photo,
+.camera__error-box {
+  display: block;
+  width: 100%;
+  height: 440px;
+  object-fit: cover;
+  background: #111;
+  border-radius: 4px;
+}
+.camera__error-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+}
+
+.camera__countdown {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 140px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 4px;
+  text-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.camera__date {
+  margin: 12px 0 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 20px;
+  color: #111;
+  text-align: left;
+}
+
+.camera__actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.camera__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 40px;
+  border: none;
+  border-radius: 999px;
+  background: #ff2e78;
+  box-shadow: 0 8px 30px 0 rgba(255, 46, 120, 0.45);
+  color: #fff;
+  font-weight: 700;
+  font-size: 24px;
+  cursor: pointer;
+}
+.camera__cta--ghost {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+}
+
+.camera__hint {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── 10 QR 코드 발송 */
+.qr__title {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 56px;
+}
+.qr__subtitle {
+  margin: 0;
+  font-weight: 500;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.qr__card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 340px;
+  height: 340px;
+  border-radius: 32px;
+  background: #fff;
+  box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
+}
+.qr__placeholder {
+  margin: 0;
+  color: #0b0b19;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.6;
+}
+.qr__caption {
+  margin: 0;
+  max-width: 560px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.45);
+}
+.qr__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 28px 64px;
+  border: none;
+  border-radius: 999px;
+  background: #ff2e78;
+  box-shadow: 0 8px 46px 2px rgba(255, 46, 120, 0.5);
+  color: #fff;
+  font-weight: 700;
+  font-size: 32px;
+  cursor: pointer;
 }
