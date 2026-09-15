@@ -12,7 +12,7 @@ import { api, getApiErrorMessage } from '../../shared/api/client.js'
 import RankingRow from './RankingRow.jsx'
 import CameraStep from './CameraStep.jsx'
 import QrStep from './QrStep.jsx'
-import { useKioskScale } from './useKioskScale.js'
+import { useKioskScale } from '../../shared/hooks/useKioskScale.js'
 import { MOCK_TOP10_WITH_ME, MOCK_TOP10_WITHOUT_ME, MOCK_MY_PINNED } from './mockRankings.js'
 import './Ranking.css'
 

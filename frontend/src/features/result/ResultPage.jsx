@@ -13,7 +13,7 @@ import GameOverStep from './GameOverStep.jsx'
 import NicknameStep from './NicknameStep.jsx'
 import ScoreRevealStep from './ScoreRevealStep.jsx'
 import { detectEndReason } from './resultFlow.js'
-import { useKioskScale } from './useKioskScale.js'
+import { useKioskScale } from '../../shared/hooks/useKioskScale.js'
 import './Result.css'
 
 const DEMO_STATE = { score: 2480, correctCount: 24, wrongCount: 1, maxCombo: 9, playTimeMs: 24000 }

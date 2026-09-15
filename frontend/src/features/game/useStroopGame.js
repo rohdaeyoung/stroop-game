@@ -11,6 +11,12 @@ const TOTAL_PLAY_MS = 30_000
 // BE 의 ScoreRules.MAX_PLAY_TIME_MS 와 같은 값을 유지합니다. (30초 + 여유 10초)
 const MAX_SERVER_PLAY_TIME_MS = 40_000
 
+/** 남은 밀리초를 0:24 형태로 */
+function formatTime(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}
+
 export function useStroopGame({ onGameOver }) {
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -22,6 +28,9 @@ export function useStroopGame({ onGameOver }) {
   const difficulty = getDifficulty(correctCount)
   const [quiz, setQuiz] = useState(() => createQuiz(difficulty.choiceCount))
   const [timeLeft, setTimeLeft] = useState(difficulty.limitMs)
+
+  // HUD 의 전체 시간 게이지용. 화면 표시 전용이라 게임 판정에는 쓰지 않습니다.
+  const [totalLeftMs, setTotalLeftMs] = useState(TOTAL_PLAY_MS)
 
   const startedAt = useRef(Date.now())
   const questionStartedAt = useRef(Date.now())
@@ -153,10 +162,29 @@ export function useStroopGame({ onGameOver }) {
     return () => clearTimeout(id)
   }, [endGame])
 
+  // HUD 의 전체 시간 게이지. 표시 전용이며 종료 판정은 위 setTimeout 이 합니다.
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTotalLeftMs(Math.max(0, TOTAL_PLAY_MS - (Date.now() - startedAt.current)))
+    }, 200)
+    return () => clearInterval(id)
+  }, [])
+
   return {
     score, combo, lives, quiz, answer,
     timeRatio: Math.max(0, timeLeft / difficulty.limitMs),
     questionText:
       quiz.mode === MODE.COLOR ? '글자의 색을 고르세요' : '단어의 뜻을 고르세요',
+
+    // ── 화면 표시용 (Figma 게임 화면 HUD)
+    /** 모드 태그: A = 글자의 색, B = 단어의 뜻 */
+    modeLabel: quiz.mode === MODE.COLOR ? '모드 A' : '모드 B',
+    /** 지금이 몇 번째 문제인지 (맞힌 수 + 틀린 수 + 1) */
+    questionNumber: correctCount + wrongCount + 1,
+    /** 전체 30초 중 남은 비율 */
+    totalTimeRatio: Math.max(0, totalLeftMs / TOTAL_PLAY_MS),
+    /** 전체 남은 시간 표기 (0:24 형태) */
+    totalTimeText: formatTime(totalLeftMs),
+    maxLives: MAX_LIVES,
   }
 }
