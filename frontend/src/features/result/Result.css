@@ -45,7 +45,9 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* 장식용 배경 글로우 — 피그마 원본은 SVG 에셋이라 근사한 CSS 그라디언트로 대체 */
+/* 장식용 배경 글로우 — 피그마 원본은 SVG 에셋이라 근사한 CSS 그라디언트로 대체.
+   화면(단계)마다 피그마 원본 색이 달라서 --gameover/--nickname/--reveal 별로 따로 지정합니다.
+   (이전엔 blur(140px)를 줘서 overflow:hidden 에 거의 다 잘려나가 안 보이는 문제가 있었어요 — 줄였습니다.) */
 .result__screen::before,
 .result__screen::after {
   content: '';
@@ -53,20 +55,52 @@
   width: 640px;
   height: 640px;
   border-radius: 50%;
-  filter: blur(140px);
-  opacity: 0.5;
+  filter: blur(60px);
+  opacity: 0.6;
   pointer-events: none;
   z-index: 0;
 }
 .result__screen::before {
   left: -220px;
   top: -220px;
-  background: radial-gradient(circle, #ff4759, transparent 70%);
 }
 .result__screen::after {
   right: -220px;
   bottom: -220px;
-  background: radial-gradient(circle, #3b7afa, transparent 70%);
+}
+
+/* 05b 게임 종료 — 피그마 원본은 우하단 글로우 없이 좌상단 빨간 글로우 하나만 큼직하게 */
+.result__screen--gameover::before {
+  width: 820px;
+  height: 720px;
+  left: -260px;
+  top: -240px;
+  background: radial-gradient(circle, #ff4759, transparent 72%);
+  opacity: 0.65;
+}
+.result__screen--gameover::after {
+  content: none;
+}
+
+/* 06 닉네임 입력 */
+.result__screen--nickname::before {
+  background: radial-gradient(circle, #ff2e78, transparent 72%);
+}
+.result__screen--nickname::after {
+  background: radial-gradient(circle, #3b7afa, transparent 72%);
+}
+
+/* 07 결과 공개 */
+.result__screen--reveal::before {
+  background: radial-gradient(circle, #ffc93d, transparent 72%);
+}
+.result__screen--reveal::after {
+  background: radial-gradient(circle, #ff2e78, transparent 72%);
+}
+
+.result__screen--empty::before,
+.result__screen--empty::after {
+  content: none;
 }
 
 .result__screen > * {
