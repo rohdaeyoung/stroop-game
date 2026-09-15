@@ -47,7 +47,10 @@ class ScoreRepositoryTest {
     @Test
     @DisplayName("등록 시각을 지정하지 않으면 서버 시각으로 채워진다")
     void 등록시각_기본값() {
-        LocalDateTime before = LocalDateTime.now();
+        // Score 가 등록 시각을 마이크로초로 자르므로 비교 기준도 같은 정밀도로 맞춘다.
+        // 나노초 그대로 재면, 같은 마이크로초 안에 저장이 끝났을 때
+        // 잘린 createdAt 이 before 보다 작아져 간헐적으로 실패한다. (#53)
+        LocalDateTime before = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
 
         Score saved = scoreRepository.saveAndFlush(Score.builder()
                 .nickname("대영").score(1000).maxCombo(5)

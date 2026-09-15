@@ -1,5 +1,8 @@
 /* 👤 담당: 최복순 — 클래스 접두사 .onboarding 유지 */
 .onboarding {
+  /* 디자인 토큰에 없는 강조 핑크 — 이 파일(온보딩) 안에서만 사용 */
+  --onboarding-accent: #ec1f6b;
+
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -10,8 +13,8 @@
   overflow: hidden;
 }
 
-/* 시작(대기) 화면 전용 배경 글로우 */
-.onboarding--start::before {
+/* 온보딩 전 화면 공통 배경 글로우 */
+.onboarding::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -35,14 +38,10 @@
 }
 
 .onboarding__mascot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(65%, 260px);
+  width: min(55%, 200px);
   height: auto;
-  z-index: -1;
-  opacity: 0.35;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 28px rgba(10, 132, 255, 0.55));
 }
 
 .onboarding__brand {
@@ -50,13 +49,15 @@
   font-size: var(--font-size-sm);
   font-weight: 900;
   letter-spacing: 0.05em;
-  color: var(--color-primary);
+  color: var(--stroop-blue);
 }
 
 .onboarding__title.onboarding__title--stroop {
+  margin-top: calc(var(--space-3) * -1);
   font-size: var(--font-size-xl);
   font-weight: 900;
   line-height: 1.15;
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
 }
 
 .onboarding__start-cta {
@@ -64,7 +65,7 @@
   padding: var(--space-3) var(--space-4);
   border: none;
   border-radius: var(--radius-full);
-  background: #ec1f6b;
+  background: var(--onboarding-accent);
   color: var(--color-text);
   font-family: var(--font-base);
   font-size: var(--font-size-md);
@@ -122,20 +123,83 @@
   margin: 0;
 }
 
-.onboarding__actions {
+/* 상단 배지 / 배너 (모드 표시) */
+.onboarding__badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 900;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.onboarding__badge--a { background: var(--stroop-blue); }
+.onboarding__badge--b { background: var(--onboarding-accent); }
+
+.onboarding__banner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.2s ease;
+}
+
+.onboarding__banner-text {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.onboarding__banner--wrong { background: rgba(255, 59, 48, 0.18); }
+.onboarding__banner--correct { background: rgba(46, 204, 113, 0.18); }
+
+/* 모드 설명 화면 */
+.onboarding__mode-intro {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.onboarding__mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.onboarding__mode-card {
+  flex: 1;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
 }
 
-.onboarding__tips {
-  margin: 0;
-  padding-left: var(--space-4);
+.onboarding__mode-card-question {
   font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
+  margin: 0;
+}
+
+.onboarding__mode-card-word {
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+}
+
+.onboarding__mode-card-choices {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 /* 예시 문제 카드 */
@@ -149,10 +213,7 @@
   gap: var(--space-2);
 }
 
-.onboarding__example-label { font-size: var(--font-size-sm); color: var(--color-text-dim); }
-.onboarding__example-question { font-size: var(--font-size-sm); margin: 0; }
 .onboarding__example-word { font-size: var(--font-size-xl); font-weight: 900; }
-.onboarding__example-answer { font-size: var(--font-size-sm); margin: 0; }
 .onboarding__example-hint { font-size: var(--font-size-sm); color: var(--color-text-dim); margin: 0; }
 
 .onboarding__example-choices {
@@ -161,7 +222,9 @@
   gap: var(--space-2);
 }
 
-.onboarding__example-choice {
+.onboarding__choice {
+  position: relative;
+  overflow: visible;
   border: 2px solid transparent;
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -173,32 +236,31 @@
   transition: transform 0.1s ease, opacity 0.2s ease;
 }
 
-.onboarding__example-choice:active { transform: scale(0.96); }
-.onboarding__example-choice:disabled { cursor: default; }
-.onboarding__example-choice:disabled:not(.onboarding__example-choice--picked):not(.onboarding__example-choice--answer) {
-  opacity: 0.4;
-}
-.onboarding__example-choice--picked { border-color: var(--color-text); }
-.onboarding__example-choice--answer { border-color: var(--color-success); }
-
-.onboarding__example-feedback {
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+.onboarding__choice-badge {
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
-.onboarding__example-feedback--correct { background: rgba(46, 204, 113, 0.12); }
-.onboarding__example-feedback--wrong { background: rgba(255, 59, 48, 0.12); }
-
-.onboarding__example-feedback-title {
-  font-size: var(--font-size-md);
-  font-weight: 900;
-  margin: 0;
+.onboarding__choice--sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
 }
 
-.onboarding__example-retry {
+.onboarding__choice:active { transform: scale(0.96); }
+.onboarding__choice:disabled { cursor: default; }
+.onboarding__choice--muted { opacity: 0.45; }
+.onboarding__choice--wrong { border-color: var(--color-danger); }
+.onboarding__choice--highlight {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 3px rgba(245, 245, 247, 0.25);
+}
+
+.onboarding__example-link {
   align-self: center;
   margin-top: var(--space-1);
   background: transparent;
@@ -210,50 +272,160 @@
   cursor: pointer;
 }
 
-/* 닉네임 입력 */
-.onboarding__nickname {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.onboarding__nickname-field {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: var(--color-surface);
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-}
-
-.onboarding__nickname-field--error { border-color: var(--color-danger); }
-
-.onboarding__nickname-input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
+.onboarding__example-link--primary {
   color: var(--color-text);
-  font-family: var(--font-base);
   font-size: var(--font-size-md);
   font-weight: 700;
 }
 
-.onboarding__nickname-count {
-  color: var(--color-text-dim);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
+/* 카운트다운 */
+.onboarding__countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
+  z-index: 1;
 }
 
-.onboarding__nickname-hint {
-  margin: calc(var(--space-3) * -1) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
-  text-align: center;
+.onboarding__countdown-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.9s linear;
 }
 
-.onboarding__nickname-field--error + .onboarding__nickname-hint {
-  color: var(--color-danger);
+.onboarding__countdown-ring::before {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+}
+
+.onboarding__countdown-number {
+  position: relative;
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+/* ===== 태블릿 · 키오스크 레이아웃 =====
+   index.css 의 .app-shell 폭 제한은 통합 시점에 제거되어 화면 전체를 씁니다.
+   (원래 여기서 :has() 로 우회하던 max-width 지정은 더 이상 필요 없어 걷어냈습니다)
+   폰트 토큰은 .onboarding 스코프 안에서만 재정의합니다.
+
+   세로(태블릿을 세워서 씀)와 가로(Figma 원본 PDF 는 1920x1080 랜드스케이프,
+   PRD 의 "터치 우선 (태블릿)" 기준) 둘 다 지원합니다:
+   - 이 블록: 768px 이상 공통 + 세로일 때 기준값 (화면이 넉넉히 높음)
+   - 아래 orientation: landscape 블록: 가로일 때 (화면 높이가 짧으므로 크기를 줄임) */
+@media (min-width: 768px) {
+  .onboarding {
+    --font-size-sm: 16px;
+    --font-size-md: 22px;
+    --font-size-lg: 34px;
+    --font-size-xl: 80px;
+    gap: var(--space-5);
+    padding: var(--space-5);
+  }
+
+  .onboarding__mascot {
+    width: min(50%, 380px);
+  }
+
+  .onboarding__start-cta {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .onboarding__banner {
+    margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0;
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .onboarding__mode-cards {
+    flex-direction: row;
+  }
+
+  .onboarding__example {
+    padding: var(--space-5);
+    gap: var(--space-3);
+  }
+
+  .onboarding__example-choices {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+  }
+
+  .onboarding__choice {
+    padding: var(--space-4);
+  }
+
+  .onboarding__countdown-ring {
+    width: 180px;
+    height: 180px;
+  }
+
+  .onboarding__countdown-ring::before {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* 가로(랜드스케이프) 태블릿 — PDF 원본과 같은 방향.
+   세로 버전보다 화면 높이가 짧으므로 폭은 더 넓게, 세로 간격/글자 크기는 줄여서
+   스크롤 없이 한 화면에 들어오게 합니다. */
+@media (min-width: 768px) and (orientation: landscape) {
+  .onboarding {
+    --font-size-sm: 15px;
+    --font-size-md: 20px;
+    --font-size-lg: 30px;
+    --font-size-xl: 56px;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    overflow-y: auto;
+  }
+
+  .onboarding__start {
+    gap: var(--space-2);
+  }
+
+  .onboarding__mascot {
+    width: min(28%, 160px);
+  }
+
+  .onboarding__title.onboarding__title--stroop {
+    margin-top: calc(var(--space-2) * -1);
+  }
+
+  .onboarding__banner {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .onboarding__mode-cards {
+    gap: var(--space-4);
+  }
+
+  .onboarding__example {
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .onboarding__choice {
+    padding: var(--space-3);
+  }
+
+  .onboarding__countdown-ring {
+    width: 140px;
+    height: 140px;
+  }
+
+  .onboarding__countdown-ring::before {
+    width: 116px;
+    height: 116px;
+  }
 }
