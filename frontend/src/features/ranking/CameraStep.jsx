@@ -166,6 +166,13 @@ export default function CameraStep({ onNext, onSkip }) {
       </div>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
+      {/* 피그마의 원형 셔터(shutter_box) — 자동 촬영이라 누르는 버튼은 아니고,
+          지금 촬영 대기/진행 중이라는 걸 보여주는 장식 요소입니다 */}
+      <div
+        className={`camera__shutter-dot${phase === 'countdown' || phase === 'live' ? ' camera__shutter-dot--pulse' : ''}`}
+        aria-hidden="true"
+      />
+
       <div className="camera__actions">
         {phase === 'captured' ? (
           <>
