@@ -418,3 +418,23 @@
   font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
 }
+
+/* ───── 성공 / 실패 판정 (docs/GAME_RULES.md) ───── */
+.result__verdict {
+  display: inline-block;
+  margin: 0 auto 4px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.result__verdict.is-success {
+  background: rgba(46, 199, 112, 0.16);
+  color: #2ec770;
+}
+
+.result__verdict.is-fail {
+  background: rgba(255, 201, 61, 0.14);
+  color: #ffc93d;
+}

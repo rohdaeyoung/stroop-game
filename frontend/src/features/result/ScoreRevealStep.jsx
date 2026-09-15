@@ -1,14 +1,25 @@
 // 👤 담당: 이혜원
 // 07_결과 (Result) — 점수 공개 + 랭킹 미리보기
 import { formatAccuracy } from './resultFlow.js'
+import { isSuccess, SUCCESS_SCORE } from './successRule.js'
 
 export default function ScoreRevealStep({ score, correctCount, wrongCount, maxCombo, rank, onNext }) {
   const accuracy = formatAccuracy(correctCount, wrongCount)
+  const success = isSuccess(score)
 
   return (
     <div className="result__screen result__screen--reveal">
       <p className="result__reveal-eyebrow">게임이 종료되었습니다!</p>
-      <h1 className="result__reveal-title">이야~ 멋쟁이 점수인데요?</h1>
+      <h1 className="result__reveal-title">
+        {success ? '이야~ 멋쟁이 점수인데요?' : '아깝다! 조금만 더 하면 돼요'}
+      </h1>
+
+      {/* 성공 기준은 docs/GAME_RULES.md 참고 (#56 에서 5,000점으로 확정) */}
+      <p className={`result__verdict ${success ? 'is-success' : 'is-fail'}`}>
+        {success
+          ? `성공! ${SUCCESS_SCORE.toLocaleString()}점을 넘었어요`
+          : `${(SUCCESS_SCORE - score).toLocaleString()}점만 더 모으면 성공이에요`}
+      </p>
 
       {/* 피그마의 메달 그래픽 에셋은 도구 접근 제한으로 가져오지 못해 이모지로 대체했습니다.
           실제 에셋 파일을 전달받으면 이미지로 교체하면 됩니다. */}
