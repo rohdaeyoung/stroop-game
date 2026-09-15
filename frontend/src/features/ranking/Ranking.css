@@ -432,13 +432,16 @@
   animation: camera-shutter-pulse 1s ease-in-out infinite;
 }
 
-/* 셔터를 누르라고 가리키는 손그림 화살표 (피그마 원본 장식 요소) */
+/* 셔터를 누르라고 가리키는 손그림 화살표 (피그마 원본 장식 요소)
+   피그마 실측: 803x452, camera_viewfinder 기준 left:460 top:110
+   → 캔버스(1920x1080) 절대좌표로 환산하면 대략 left:1190 top:328 */
 .camera__shutter-arrows {
   position: absolute;
-  right: 160px;
-  bottom: 90px;
-  width: 220px;
-  height: auto;
+  left: 1190px;
+  top: 328px;
+  width: 803px;
+  height: 452px;
+  object-fit: contain;
   pointer-events: none;
   z-index: 1;
 }
