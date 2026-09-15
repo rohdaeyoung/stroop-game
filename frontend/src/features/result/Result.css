@@ -1,34 +1,311 @@
-/* 👤 담당: 이혜원 — 클래스 접두사 .result 유지 */
-.result {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
+/* 👤 담당: 이혜원 — 클래스 접두사 .result 유지
+   이번 피그마 디자인은 design/tokens/tokens.css(나연님 소유) 팔레트와 완전히 달라서
+   토큰을 새로 정의해달라고 요청하기 전까지 이 파일 안에서만 쓰는 로컬 변수로 뒀습니다.
+   전역 토큰이 업데이트되면 --rk-* 변수들을 var(--color-...) 로 교체하면 됩니다. */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+.result-kiosk,
+.result-kiosk--empty {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0b0b19;
+  font-family: 'Noto Sans KR', var(--font-base);
 }
 
-.result__title { text-align: center; font-size: var(--font-size-lg); margin: 0; }
-.result__score { text-align: center; font-size: var(--font-size-xl); font-weight: 900; color: var(--color-primary); }
+.result-kiosk__canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center;
+}
 
-.result__stats { display: flex; justify-content: space-around; margin: var(--space-3) 0 0; }
-.result__stats div { text-align: center; }
-.result__stats dt { font-size: var(--font-size-sm); color: var(--color-text-dim); }
-.result__stats dd { margin: var(--space-1) 0 0; font-weight: 700; }
-
-.result__submit { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.result__input {
-  padding: var(--space-3);
-  border: 2px solid var(--color-surface);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-family: var(--font-base);
-  font-size: var(--font-size-md);
+.result__screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  overflow: hidden;
+  color: #ffffff;
   text-align: center;
 }
 
-.result__rank { text-align: center; font-size: var(--font-size-md); }
-.result__pending { margin: 0; color: var(--color-text-dim); font-size: var(--font-size-sm); text-align: center; }
-.result__error { color: var(--color-danger); font-size: var(--font-size-sm); text-align: center; }
+.result__screen--empty {
+  gap: 24px;
+}
+
+.result__empty-text {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 장식용 배경 글로우 — 피그마 원본은 SVG 에셋이라 근사한 CSS 그라디언트로 대체 */
+.result__screen::before,
+.result__screen::after {
+  content: '';
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.result__screen::before {
+  left: -220px;
+  top: -220px;
+  background: radial-gradient(circle, #ff4759, transparent 70%);
+}
+.result__screen::after {
+  right: -220px;
+  bottom: -220px;
+  background: radial-gradient(circle, #3b7afa, transparent 70%);
+}
+
+.result__screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── CTA 버튼 (공용) */
+.result__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 28px 64px;
+  border: none;
+  border-radius: 999px;
+  background: #ff2e78;
+  box-shadow: 0 8px 46px 2px rgba(255, 46, 120, 0.5);
+  color: #fff;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-weight: 700;
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+.result__cta:active { transform: scale(0.97); }
+.result__cta:disabled { opacity: 0.5; cursor: not-allowed; }
+.result__cta--nickname { padding: 24px 48px; font-size: 32px; }
+
+/* ── 05b 게임 종료 */
+.result__mascot {
+  position: absolute;
+  right: -40px;
+  bottom: -80px;
+  width: 620px;
+  height: auto;
+  opacity: 0.33;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.result__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-family: 'Black Han Sans', 'Noto Sans KR', var(--font-base);
+  font-size: 26px;
+}
+.result__badge--danger {
+  background: rgba(255, 71, 89, 0.16);
+  border: 1.5px solid #ff4759;
+}
+
+.result__gameover-title {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 90px;
+}
+
+.result__gameover-body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.result__gameover-label {
+  margin: 24px 0 0;
+  font-weight: 700;
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.result__gameover-score {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 96px;
+  color: #ffc93d;
+}
+
+/* ── 06 닉네임 입력 */
+.result__nickname-title {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 72px;
+}
+
+.result__nickname-subtitle {
+  margin: 0;
+  font-weight: 500;
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.result__nickname-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 760px;
+  height: 120px;
+  margin-top: 12px;
+  padding: 0 32px;
+  border-radius: 32px;
+  border: 3px solid #3b7afa;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 30px 0 rgba(59, 122, 250, 0.35);
+}
+.result__nickname-field--error {
+  border-color: #ff4759;
+  box-shadow: 0 0 30px 0 rgba(255, 71, 89, 0.35);
+}
+
+.result__nickname-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 48px;
+  color: #fff;
+}
+.result__nickname-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.result__nickname-count {
+  font-weight: 700;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.result__nickname-hint {
+  margin: 0;
+  font-weight: 500;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.result__nickname-error {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: #ff4759;
+}
+
+.result__nickname-pending {
+  margin: 0;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── 07 결과 */
+.result__reveal-eyebrow {
+  margin: 0;
+  font-weight: 700;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.result__reveal-title {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-weight: 400;
+  font-size: 72px;
+}
+
+.result__medal {
+  font-size: 110px;
+  line-height: 1;
+  transform: rotate(-12deg);
+}
+
+.result__reveal-score {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 140px;
+  color: #ffc93d;
+}
+.result__reveal-score-unit {
+  margin-left: 8px;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-weight: 700;
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.result__rank-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: 1px solid #ffc93d;
+  background: rgba(255, 201, 61, 0.12);
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.result__stats-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.result__stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 156px;
+  padding: 26px 36px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+.result__stat-card--correct { border-color: rgba(46, 199, 112, 0.5); }
+.result__stat-card--combo { border-color: rgba(255, 46, 120, 0.5); }
+.result__stat-card--accuracy { border-color: rgba(59, 122, 250, 0.5); }
+
+.result__stat-value {
+  margin: 0;
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 44px;
+}
+.result__stat-card--correct .result__stat-value { color: #2ec770; }
+.result__stat-card--combo .result__stat-value { color: #ff2e78; }
+.result__stat-card--accuracy .result__stat-value { color: #3b7afa; }
+
+.result__stat-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+}
