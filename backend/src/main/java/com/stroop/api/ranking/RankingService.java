@@ -46,7 +46,9 @@ public class RankingService {
         Score score = scoreRepository.findById(scoreId)
                 .orElseThrow(() -> new ApiException(ErrorCode.SCORE_NOT_FOUND));
 
-        long rank = scoreRepository.countHigherThan(score.getScore()) + 1;
+        // 랭킹 목록과 같은 기준(점수 → 먼저 등록 → id)으로 세야 동점자 순위가 목록과 일치한다
+        long rank = scoreRepository.countHigherRankThan(
+                score.getScore(), score.getCreatedAt(), score.getId()) + 1;
         long total = scoreRepository.count();
         double percentile = total == 0 ? 100.0 : Math.round(rank * 1000.0 / total) / 10.0;
 
