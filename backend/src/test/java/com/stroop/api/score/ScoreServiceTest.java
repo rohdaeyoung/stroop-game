@@ -28,7 +28,7 @@ class ScoreServiceTest {
     ScoreService scoreService;
 
     private static ScoreSubmitRequest request(int score) {
-        return new ScoreSubmitRequest("대영", score, 17, 42, 2, 60000L);
+        return new ScoreSubmitRequest("대영", score, 17, 42, 2, 30000L);
     }
 
     private void 저장은_그대로_돌려준다() {
@@ -76,7 +76,7 @@ class ScoreServiceTest {
         given(scoreRepository.findBestScoreByNickname("대영")).willReturn(0);
         given(scoreRepository.save(any(Score.class))).willReturn(Score.builder()
                 .nickname("대영").score(1250).maxCombo(17)
-                .correctCount(42).wrongCount(2).playTimeMs(60000L)
+                .correctCount(42).wrongCount(2).playTimeMs(30000L)
                 .createdAt(savedAt)
                 .build());
 

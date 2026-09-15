@@ -20,8 +20,8 @@ final class ScoreRules {
     /** 오답 3회에서 게임 오버 */
     static final long MAX_WRONG_COUNT = 3;
 
-    /** 60초 게임 + 여유 10초 */
-    static final long MAX_PLAY_TIME_MS = 70_000;
+    /** 30초 게임 + 여유 10초 */
+    static final long MAX_PLAY_TIME_MS = 40_000;
 
     private ScoreRules() {
     }

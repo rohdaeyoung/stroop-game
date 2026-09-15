@@ -7,8 +7,9 @@ import { getDifficulty } from './difficulty.js'
 import { calcScore } from './scoreCalculator.js'
 
 const MAX_LIVES = 3
-const TOTAL_PLAY_MS = 60_000
-const MAX_SERVER_PLAY_TIME_MS = 70_000
+const TOTAL_PLAY_MS = 30_000
+// BE 의 ScoreRules.MAX_PLAY_TIME_MS 와 같은 값을 유지합니다. (30초 + 여유 10초)
+const MAX_SERVER_PLAY_TIME_MS = 40_000
 
 export function useStroopGame({ onGameOver }) {
   const [score, setScore] = useState(0)
@@ -71,7 +72,7 @@ export function useStroopGame({ onGameOver }) {
     const totalElapsed = now - startedAt.current
     const elapsed = now - questionStartedAt.current
 
-    // 전역 60초 또는 현재 문제 제한시간이 지나면 입력을 받지 않습니다.
+    // 전역 30초 또는 현재 문제 제한시간이 지나면 입력을 받지 않습니다.
     if (totalElapsed >= TOTAL_PLAY_MS || elapsed >= difficulty.limitMs) {
       endGame()
       return

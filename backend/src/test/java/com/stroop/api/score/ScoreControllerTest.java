@@ -38,9 +38,9 @@ class ScoreControllerTest {
 
     @ParameterizedTest(name = "score={0}, wrongCount={1}, playTimeMs={2} → 201")
     @CsvSource({
-            "12500, 2, 60000",   // 일반적인 기록
+            "12500, 2, 30000",   // 일반적인 기록
             "0,     3, 0",       // 모든 하한 경계값
-            "300000, 3, 70000"   // 모든 상한 경계값
+            "300000, 3, 40000"   // 모든 상한 경계값
     })
     @DisplayName("허용 범위 안이면 저장한다")
     void 허용_범위(int score, int wrongCount, long playTimeMs) throws Exception {
@@ -57,10 +57,10 @@ class ScoreControllerTest {
 
     @ParameterizedTest(name = "score={0}, wrongCount={1}, playTimeMs={2} → INVALID_SCORE")
     @CsvSource({
-            "300001, 2, 60000",  // 점수 상한 초과
-            "-1,     2, 60000",  // 음수 점수
-            "12500,  4, 60000",  // 오답 3회 초과
-            "12500,  2, 70001"   // 플레이 시간 상한 초과
+            "300001, 2, 30000",  // 점수 상한 초과
+            "-1,     2, 30000",  // 음수 점수
+            "12500,  4, 30000",  // 오답 3회 초과
+            "12500,  2, 40001"   // 플레이 시간 상한 초과
     })
     @DisplayName("허용 범위를 벗어나면 INVALID_SCORE 로 거부한다")
     void 범위_밖(int score, int wrongCount, long playTimeMs) throws Exception {
@@ -82,7 +82,7 @@ class ScoreControllerTest {
     void 닉네임_오류(String nickname) throws Exception {
         mockMvc.perform(post("/api/scores")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(nickname, 12500, 2, 60000)))
+                        .content(body(nickname, 12500, 2, 30000)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_NICKNAME"));
     }
@@ -95,7 +95,7 @@ class ScoreControllerTest {
 
         mockMvc.perform(post("/api/scores")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(nickname, 12500, 2, 60000)))
+                        .content(body(nickname, 12500, 2, 30000)))
                 .andExpect(status().isCreated());
     }
 

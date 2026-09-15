@@ -40,7 +40,7 @@ class RankingServiceTest {
                 .maxCombo(10)
                 .correctCount(20)
                 .wrongCount(1)
-                .playTimeMs(61000L)
+                .playTimeMs(31000L)
                 .build();
     }
 

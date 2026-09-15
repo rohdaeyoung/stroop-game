@@ -52,7 +52,7 @@
 
 - 제한시간 내 미응답
 - 오답 3회 누적
-- 총 플레이 60초 경과
+- 총 플레이 30초 경과
 
 ## 성공 / 실패
 
@@ -73,7 +73,7 @@
 | `score` | **0 ~ 300,000** | `INVALID_SCORE` | 비정상 점수 차단 |
 | `wrongCount` | **0 ~ 3** | `INVALID_SCORE` | 오답 3회에서 게임 오버 |
 | `correctCount`, `maxCombo` | 0 이상 | `INVALID_SCORE` | |
-| `playTimeMs` | **0 ~ 70,000** | `INVALID_SCORE` | 60초 게임 + 여유 10초 |
+| `playTimeMs` | **0 ~ 40,000** | `INVALID_SCORE` | 30초 게임 + 여유 10초 |
 
 > 조작을 막기 위한 장치가 아니라 **앱 버그로 이상한 값이 저장되는 것을 막는 안전망**입니다.
 
@@ -110,13 +110,13 @@
 
 | 입력 | 기대 응답 |
 |---|---|
-| score=12500, wrongCount=2, playTimeMs=60000 | **201** |
+| score=12500, wrongCount=2, playTimeMs=30000 | **201** |
 | score=0, wrongCount=3, playTimeMs=0 | **201** (모든 경계값 허용) |
 | score=300000 | **201** (경계값) |
 | score=**300001** | 400 `INVALID_SCORE` |
 | score=**-1** | 400 `INVALID_SCORE` |
 | wrongCount=**4** | 400 `INVALID_SCORE` |
-| playTimeMs=**70001** | 400 `INVALID_SCORE` |
+| playTimeMs=**40001** | 400 `INVALID_SCORE` |
 | nickname=**""** | 400 `INVALID_NICKNAME` |
 | nickname=`대영`, `Tiger123`, `ㅋㅋ`, `가나다라마바사아자차`(10자) | **201** |
 | nickname=`대영!`, `대영_`, `<script>` (특수문자) | 400 `INVALID_NICKNAME` |

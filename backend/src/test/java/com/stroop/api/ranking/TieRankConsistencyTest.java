@@ -39,7 +39,7 @@ class TieRankConsistencyTest {
     private Score saveAt(String nickname, int score, LocalDateTime createdAt) {
         return scoreRepository.saveAndFlush(Score.builder()
                 .nickname(nickname).score(score).maxCombo(10)
-                .correctCount(20).wrongCount(1).playTimeMs(60_000)
+                .correctCount(20).wrongCount(1).playTimeMs(30_000)
                 .createdAt(createdAt)
                 .build());
     }
@@ -51,7 +51,7 @@ class TieRankConsistencyTest {
         Score second = saveAt("다음", 1000, PAST.plusSeconds(1));
 
         ScoreSubmitResponse submitted = scoreService.submit(
-                new ScoreSubmitRequest("나중", 1000, 10, 20, 1, 60_000L));
+                new ScoreSubmitRequest("나중", 1000, 10, 20, 1, 30_000L));
 
         List<RankingItem> rankings = rankingService.getTopRankings(10).rankings();
 
@@ -74,7 +74,7 @@ class TieRankConsistencyTest {
         saveAt("낮은점수", 900, PAST);
 
         ScoreSubmitResponse submitted = scoreService.submit(
-                new ScoreSubmitRequest("높은점수", 1500, 10, 20, 1, 60_000L));
+                new ScoreSubmitRequest("높은점수", 1500, 10, 20, 1, 30_000L));
 
         assertThat(submitted.rank()).isEqualTo(1);
         assertThat(rankingService.getTopRankings(10).rankings())

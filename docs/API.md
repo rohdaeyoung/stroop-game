@@ -37,7 +37,7 @@ Base URL: `http://localhost:8080` (로컬) / 배포 주소는 README 배포 계�
   "maxCombo": 17,
   "correctCount": 42,
   "wrongCount": 3,
-  "playTimeMs": 61000
+  "playTimeMs": 31000
 }
 ```
 

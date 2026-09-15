@@ -34,7 +34,7 @@ class ScoreRepositoryTest {
                 .maxCombo(10)
                 .correctCount(20)
                 .wrongCount(1)
-                .playTimeMs(60_000)
+                .playTimeMs(30_000)
                 .createdAt(createdAt)
                 .build());
     }
