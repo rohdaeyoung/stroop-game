@@ -76,7 +76,8 @@ class ScoreControllerTest {
             "", "   ", "열한글자닉네임입니다요",       // 비었거나 10자 초과
             "대영!", "대영_", "<script>",             // 특수문자
             "tiger king", "대 영",                    // 공백
-            "대영😀"                                  // 이모지
+            "대영😀",                                 // 이모지
+            "ㅋㅋ", "대ㅎ"                            // 자음·모음 (FE 규칙과 동일하게 제외)
     })
     @DisplayName("닉네임이 비었거나, 10자를 넘거나, 한글·영문·숫자 외 문자가 있으면 INVALID_NICKNAME 으로 거부한다")
     void 닉네임_오류(String nickname) throws Exception {
@@ -88,7 +89,7 @@ class ScoreControllerTest {
     }
 
     @ParameterizedTest(name = "nickname=\"{0}\" → 201")
-    @ValueSource(strings = {"대영", "Tiger123", "ㅋㅋ", "가나다라마바사아자차"})
+    @ValueSource(strings = {"대영", "Tiger123", "가나다라마바사아자차"})
     @DisplayName("한글·영문·숫자 조합의 1~10자 닉네임은 허용한다")
     void 닉네임_허용(String nickname) throws Exception {
         given(scoreService.submit(any())).willReturn(new ScoreSubmitResponse(12L, 4L, true));

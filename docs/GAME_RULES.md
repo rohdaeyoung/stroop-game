@@ -77,12 +77,12 @@
 
 > 조작을 막기 위한 장치가 아니라 **앱 버그로 이상한 값이 저장되는 것을 막는 안전망**입니다.
 
-**닉네임 문자 규칙** — 정규식 `^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9]+$`
+**닉네임 문자 규칙** — 정규식 `^[가-힣a-zA-Z0-9]+$` (길이 1~10자는 별도 검사)
 
 - 공백, 특수문자(`!` `_` `<` 등), 이모지는 허용하지 않습니다
-- 자음·모음만 쓴 닉네임(`ㅋㅋ`)은 한글로 보고 허용합니다
+- 자음·모음(`ㅋㅋ`, `대ㅎ`)은 허용하지 않습니다 — 완성된 한글만 받습니다
 - 닉네임 입력 화면도 **같은 정규식**으로 미리 막아주세요. 서버에서 거부되면 참가자가 다시 입력해야 합니다
-- 코드: `backend/src/main/java/com/stroop/api/score/ScoreRules.java`
+- 코드: 서버 `backend/src/main/java/com/stroop/api/score/ScoreRules.java`, FE `frontend/src/features/onboarding/nicknameStorage.js`
 
 ## 검증 케이스 (FE · BE 공통)
 
@@ -118,7 +118,8 @@
 | wrongCount=**4** | 400 `INVALID_SCORE` |
 | playTimeMs=**40001** | 400 `INVALID_SCORE` |
 | nickname=**""** | 400 `INVALID_NICKNAME` |
-| nickname=`대영`, `Tiger123`, `ㅋㅋ`, `가나다라마바사아자차`(10자) | **201** |
+| nickname=`대영`, `Tiger123`, `가나다라마바사아자차`(10자) | **201** |
+| nickname=`ㅋㅋ`, `대ㅎ` (자음·모음) | 400 `INVALID_NICKNAME` |
 | nickname=`대영!`, `대영_`, `<script>` (특수문자) | 400 `INVALID_NICKNAME` |
 | nickname=`tiger king`, `대 영` (공백) | 400 `INVALID_NICKNAME` |
 | nickname=`대영😀` (이모지) | 400 `INVALID_NICKNAME` |
