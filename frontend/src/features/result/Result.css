@@ -159,12 +159,14 @@
 
 /* ── 05b 게임 종료 */
 .result__mascot {
+  /* 피그마 97:67/68/70 실측: left 1021px top 322px, 1020x761, object-cover, opacity 33% —
+     3개 게임종료 변형 모두 동일한 크기/위치입니다 */
   position: absolute;
-  right: -40px;
-  bottom: -80px;
-  width: 620px;
-  height: auto;
-  object-fit: contain;
+  left: 1021px;
+  top: 322px;
+  width: 1020px;
+  height: 761px;
+  object-fit: cover;
   pointer-events: none;
   z-index: 0;
   opacity: 0;
