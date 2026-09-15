@@ -1,5 +1,10 @@
 // ⚠️ [공용] API 호출 공통 래퍼. BE(고은우) 응답 형식과 맞춰져 있습니다.
-const BASE_URL = '/api'
+// 개발: Vite 프록시가 /api 를 로컬 백엔드로 넘긴다 (vite.config.js)
+// 배포: 프론트와 백엔드 주소가 다르므로 VITE_API_BASE_URL 로 백엔드 주소를 받는다
+//       예) https://stroop-api.onrender.com/api
+// import.meta.env 는 Vite 가 빌드할 때만 존재합니다.
+// node --test 로 이 파일을 직접 불러오면 없으므로 optional chaining 으로 읽습니다.
+const BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? '/api'
 export const REQUEST_TIMEOUT_MS = 65_000
 
 const ERROR_MESSAGES = Object.freeze({

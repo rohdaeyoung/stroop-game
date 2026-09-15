@@ -1,0 +1,50 @@
+# 👤 담당: 노대영 — Render 배포 정의
+#
+# Render 대시보드에서 New → Blueprint 로 이 레포를 연결하면
+# 아래 두 서비스가 한 번에 만들어집니다.
+#
+# ⚠️ sync: false 인 값은 Render 대시보드에서 직접 입력해야 합니다.
+#    (DB 접속 정보를 레포에 두지 않기 위함 — public 레포입니다)
+
+services:
+  # ───── 백엔드 (Spring Boot) ─────
+  - type: web
+    name: stroop-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: singapore          # 한국에서 가장 가까운 리전
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # TiDB Cloud 접속 정보 — 대시보드에서 입력
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # 프론트 주소 (아래 static site 가 만들어진 뒤 그 주소를 넣습니다)
+      - key: CORS_ORIGIN
+        sync: false
+
+  # ───── 프론트 (Vite 정적 빌드) ─────
+  - type: web
+    name: stroop-game
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    region: singapore
+    autoDeploy: true
+    envVars:
+      # 백엔드 주소 + /api  (예: https://stroop-api.onrender.com/api)
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      # SPA 라우팅: /game, /result 등을 새로고침해도 index.html 을 주도록
+      - type: rewrite
+        source: /*
+        destination: /index.html
