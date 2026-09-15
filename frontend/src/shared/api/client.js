@@ -40,10 +40,14 @@ async function request(path, options = {}) {
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
   try {
+    // FormData(사진 업로드)는 Content-Type 을 브라우저가 boundary 와 함께 정해야 합니다.
+    // 여기서 application/json 을 넣으면 서버가 본문을 읽지 못합니다.
+    const isFormData = options.body instanceof FormData
+
     const res = await fetch(`${BASE_URL}${path}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...options.headers,
       },
       signal: controller.signal,
@@ -78,6 +82,14 @@ async function request(path, options = {}) {
   }
 }
 
+/** 백엔드 절대 주소 (QR 에 넣을 사진 주소를 만들 때 씁니다) */
+export function apiOrigin() {
+  // 배포: VITE_API_BASE_URL 이 'https://호스트/api' 형태
+  // 개발: '/api' 라 현재 페이지 주소를 기준으로 합니다
+  if (BASE_URL.startsWith('http')) return BASE_URL
+  return `${window.location.origin}${BASE_URL}`
+}
+
 export const api = {
   /** 점수 제출 → { scoreId, rank, isNewRecord } */
   submitScore: (payload) =>
@@ -88,4 +100,15 @@ export const api = {
 
   /** 내 순위 → { rank, total, percentile } */
   getMyRank: (scoreId) => request(`/rankings/me?scoreId=${scoreId}`),
+
+  /**
+   * 인증샷 업로드 → { token, expiresAt, expiresInSeconds }
+   * 서버가 5분만 보관합니다. (docs/API.md)
+   */
+  uploadPhoto: (blob) => {
+    const form = new FormData()
+    form.append('photo', blob, 'eoheung-shot.jpg')
+    // Content-Type 은 브라우저가 boundary 와 함께 자동으로 넣습니다
+    return request('/photos', { method: 'POST', body: form })
+  },
 }
