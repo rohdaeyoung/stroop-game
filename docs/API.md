@@ -131,6 +131,8 @@ Base URL: `http://localhost:8080` (로컬) / 배포 주소는 README 배포 계�
 | 400 | `INVALID_NICKNAME` | 닉네임이 1~10자가 아니거나, 한글·영문·숫자 외 문자(공백·특수문자·이모지) 포함 — [GAME_RULES.md](GAME_RULES.md) 서버 검증 참고 |
 | 400 | `INVALID_SCORE` | 점수가 음수이거나 비정상 |
 | 404 | `SCORE_NOT_FOUND` | scoreId 없음 |
+| 404 | `NOT_FOUND` | 없는 주소 |
+| 405 | `METHOD_NOT_ALLOWED` | 주소는 있지만 허용하지 않는 요청 방식 (예: `GET /api/scores`) |
 | 404 | `PHOTO_NOT_FOUND` | 사진 토큰이 없거나 보관 시간(5분)이 지남 |
 | 413 | `PHOTO_TOO_LARGE` | 사진이 1MB 초과 |
 | 415 | `UNSUPPORTED_PHOTO_TYPE` | JPEG·PNG 가 아님 |
