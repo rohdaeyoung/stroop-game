@@ -72,7 +72,9 @@ export default function ResultPage() {
           <GameOverStep
             reason={detectEndReason(state)}
             score={state.score}
-            playTimeMs={state.playTimeMs}
+            correctCount={state.correctCount}
+            wrongCount={state.wrongCount}
+            maxCombo={state.maxCombo}
             onNext={() => setStep('nickname')}
           />
         )}
