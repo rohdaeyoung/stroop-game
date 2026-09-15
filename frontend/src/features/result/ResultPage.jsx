@@ -2,6 +2,10 @@
 // 할 일: 게임 종료 → 닉네임 입력 → 점수 공개, 3단계를 한 라우트(/result) 안에서 처리합니다.
 // (피그마상 05b_게임종료 / 06_닉네임입력 / 07_결과는 별도 프레임이지만,
 //  App.jsx 라우팅은 공용 파일이라 새 라우트를 추가하지 않고 내부 단계로 구현했습니다.)
+//
+// 디자인 미리보기: 실제로 게임을 플레이하지 않고도 화면을 보고 싶으면 주소 끝에
+// ?demo=wrong (오답3회) / noanswer (미응답) / timeup (총시간경과) / nickname / reveal (결과공개)
+// 을 붙여서 열면 아래 더미 데이터로 곧장 그 화면을 보여줍니다. 실제 서비스 동작에는 영향 없어요.
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { api, getApiErrorMessage } from '../../shared/api/client.js'
@@ -12,18 +16,31 @@ import { detectEndReason } from './resultFlow.js'
 import { useKioskScale } from './useKioskScale.js'
 import './Result.css'
 
+const DEMO_STATE = { score: 2480, correctCount: 24, wrongCount: 1, maxCombo: 9, playTimeMs: 24000 }
+
+const DEMO_PRESETS = {
+  wrong: { step: 'gameover', state: { ...DEMO_STATE, score: 890, wrongCount: 3, playTimeMs: 15000 } },
+  noanswer: { step: 'gameover', state: { ...DEMO_STATE, score: 890, wrongCount: 1, playTimeMs: 8000 } },
+  timeup: { step: 'gameover', state: { ...DEMO_STATE, wrongCount: 1, playTimeMs: 30000 } },
+  nickname: { step: 'nickname', state: DEMO_STATE },
+  reveal: { step: 'reveal', state: DEMO_STATE, submitted: { rank: 3 } },
+}
+
 export default function ResultPage() {
   const navigate = useNavigate()
-  const { state } = useLocation()
+  const { state: routeState, search } = useLocation()
   const { scale } = useKioskScale()
 
-  const [step, setStep] = useState('gameover') // 'gameover' | 'nickname' | 'reveal'
+  const demo = DEMO_PRESETS[new URLSearchParams(search).get('demo')] ?? null
+  const state = demo ? demo.state : routeState
+
+  const [step, setStep] = useState(demo ? demo.step : 'gameover') // 'gameover' | 'nickname' | 'reveal'
   const [nickname, setNickname] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
-  const [submitted, setSubmitted] = useState(null)
+  const [submitted, setSubmitted] = useState(demo?.submitted ?? null)
 
-  // 게임을 거치지 않고 직접 들어온 경우
+  // 게임을 거치지 않고 직접 들어온 경우 (미리보기 모드 제외)
   if (!state) {
     return (
       <div className="result-kiosk">
