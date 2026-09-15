@@ -410,15 +410,23 @@
   text-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
 }
 
-/* 피그마의 shutter_box(원형 셔터 표시) — 자동 촬영이라 버튼 기능은 없고
-   지금이 촬영 대기/진행 중이라는 걸 보여주는 장식용 점입니다 */
+/* 피그마의 shutter_box(원형 셔터) — 눌러야 카운트다운이 시작되는 실제 버튼입니다 */
 .camera__shutter-dot {
   width: 72px;
   height: 72px;
+  border: none;
   border-radius: 50%;
   background: #ff2e78;
   box-shadow: 0 8px 30px 0 rgba(255, 46, 120, 0.5);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+.camera__shutter-dot:active:not(:disabled) { transform: scale(0.9); }
+.camera__shutter-dot:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+  box-shadow: none;
 }
 .camera__shutter-dot--pulse {
   animation: camera-shutter-pulse 1s ease-in-out infinite;

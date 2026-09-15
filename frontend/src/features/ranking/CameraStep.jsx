@@ -74,12 +74,12 @@ export default function CameraStep({ onNext, onSkip }) {
     }
   }, [])
 
-  // 카메라가 준비되면 3초 카운트다운 시작
-  useEffect(() => {
+  // 셔터를 눌러야 3초 카운트다운이 시작됩니다 (카메라 준비만 되면 자동으로 시작되던 것에서 변경)
+  function startCountdown() {
     if (phase !== 'live') return
     setCount(COUNTDOWN_SECONDS)
     setPhase('countdown')
-  }, [phase])
+  }
 
   useEffect(() => {
     if (phase !== 'countdown') return
@@ -149,7 +149,8 @@ export default function CameraStep({ onNext, onSkip }) {
       <p className="camera__subtitle">
         {phase === 'countdown' && `${count}초 후 자동으로 촬영돼요. 카메라를 봐주세욧!`}
         {phase === 'error' && errorMessage}
-        {(phase === 'starting' || phase === 'live') && '카메라를 준비하고 있어요...'}
+        {phase === 'starting' && '카메라를 준비하고 있어요...'}
+        {phase === 'live' && '아래 셔터를 눌러 촬영을 시작해주세요!'}
         {phase === 'captured' && '어흥샷 완성! 마음에 들어요?'}
       </p>
 
@@ -166,11 +167,13 @@ export default function CameraStep({ onNext, onSkip }) {
       </div>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-      {/* 피그마의 원형 셔터(shutter_box) — 자동 촬영이라 누르는 버튼은 아니고,
-          지금 촬영 대기/진행 중이라는 걸 보여주는 장식 요소입니다 */}
-      <div
-        className={`camera__shutter-dot${phase === 'countdown' || phase === 'live' ? ' camera__shutter-dot--pulse' : ''}`}
-        aria-hidden="true"
+      {/* 피그마의 원형 셔터(shutter_box) — 이 버튼을 눌러야 3초 카운트다운이 시작되고 자동 촬영됩니다 */}
+      <button
+        type="button"
+        className={`camera__shutter-dot${phase === 'live' ? ' camera__shutter-dot--pulse' : ''}`}
+        onClick={startCountdown}
+        disabled={phase !== 'live'}
+        aria-label="촬영 시작"
       />
 
       <div className="camera__actions">
