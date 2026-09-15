@@ -2,6 +2,10 @@
 // 할 일: 상위 랭킹 목록 불러와서 표시. 결과 화면에서 넘어오면(state) 내 순위를 하이라이트하거나
 // 순위권 밖이면 하단에 고정 카드로 보여줍니다. /ranking 으로 바로 들어오면(state 없음) 그냥 목록만 보여줍니다.
 // "어흥샷 찍으러 가기"를 누르면 같은 라우트 안에서 카메라(09) → QR(10) 단계로 이어집니다.
+//
+// 디자인 미리보기: 아직 실제 제출 기록이 없어서 목록이 비어있을 때, 화면이 채워진 모습을
+// 보고 싶으면 주소 끝에 ?demo=in (순위권 안) 또는 ?demo=out (순위권 밖 고정 카드)을 붙여서
+// 열면 mockRankings.js 의 더미 데이터로 보여줍니다. 실제 서비스 동작에는 영향 없어요.
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { api, getApiErrorMessage } from '../../shared/api/client.js'
@@ -9,20 +13,24 @@ import RankingRow from './RankingRow.jsx'
 import CameraStep from './CameraStep.jsx'
 import QrStep from './QrStep.jsx'
 import { useKioskScale } from './useKioskScale.js'
+import { MOCK_TOP10_WITH_ME, MOCK_TOP10_WITHOUT_ME, MOCK_MY_PINNED } from './mockRankings.js'
 import './Ranking.css'
 
 export default function RankingPage() {
   const navigate = useNavigate()
-  const { state } = useLocation()
+  const { state, search } = useLocation()
   const { scale } = useKioskScale()
 
-  const myRank = state?.myRank ?? null
-  const myNickname = state?.myNickname ?? null
-  const myScore = state?.myScore ?? null
+  const demoMode = new URLSearchParams(search).get('demo') // 'in' | 'out' | null
+
+  const myRank = demoMode === 'out' ? MOCK_MY_PINNED.rank : demoMode === 'in' ? 3 : state?.myRank ?? null
+  const myNickname =
+    demoMode === 'out' ? MOCK_MY_PINNED.nickname : demoMode === 'in' ? '타이거짱 (나)' : state?.myNickname ?? null
+  const myScore = demoMode === 'out' ? MOCK_MY_PINNED.score : demoMode === 'in' ? 2480 : state?.myScore ?? null
 
   const [step, setStep] = useState('list') // 'list' | 'camera' | 'qr'
   const [rankings, setRankings] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!demoMode)
   const [error, setError] = useState(null)
 
   const loadRankings = useCallback(() => {
@@ -36,10 +44,13 @@ export default function RankingPage() {
   }, [])
 
   useEffect(() => {
+    if (demoMode) return // 미리보기 모드에선 실제 API를 부르지 않습니다
     loadRankings()
-  }, [loadRankings])
+  }, [loadRankings, demoMode])
 
-  const isInTop = myRank != null && rankings.some((row) => row.rank === myRank)
+  const displayedRankings = demoMode === 'out' ? MOCK_TOP10_WITHOUT_ME : demoMode === 'in' ? MOCK_TOP10_WITH_ME : rankings
+
+  const isInTop = myRank != null && displayedRankings.some((row) => row.rank === myRank)
   const showPinned = myRank != null && !isInTop
 
   return (
@@ -64,14 +75,14 @@ export default function RankingPage() {
               </div>
             )}
 
-            {!loading && !error && rankings.length === 0 && (
+            {!loading && !error && displayedRankings.length === 0 && (
               <p className="ranking__status">아직 기록이 없습니다.</p>
             )}
 
-            {!loading && !error && rankings.length > 0 && (
+            {!loading && !error && displayedRankings.length > 0 && (
               <>
                 <ol className="ranking__list">
-                  {rankings.map((row) => (
+                  {displayedRankings.map((row) => (
                     <RankingRow key={row.rank} {...row} isMe={row.rank === myRank} />
                   ))}
                 </ol>

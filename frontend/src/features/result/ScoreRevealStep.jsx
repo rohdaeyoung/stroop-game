@@ -38,7 +38,7 @@ export default function ScoreRevealStep({ score, correctCount, wrongCount, maxCo
         </div>
       </div>
 
-      <button type="button" className="result__cta" onClick={onNext}>
+      <button type="button" className="result__cta result__cta--reveal" onClick={onNext}>
         랭킹 보러 가기 <span aria-hidden="true">→</span>
       </button>
     </div>

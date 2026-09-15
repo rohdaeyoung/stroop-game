@@ -47,7 +47,7 @@ export default function GameOverStep({ reason, score, playTimeMs, onNext }) {
       <p className="result__gameover-label">지금까지 획득한 점수</p>
       <p className="result__gameover-score">{score.toLocaleString()}점</p>
 
-      <button type="button" className="result__cta" onClick={onNext}>
+      <button type="button" className="result__cta result__cta--gameover" onClick={onNext}>
         결과 확인하러 가기 <span aria-hidden="true">→</span>
       </button>
     </div>

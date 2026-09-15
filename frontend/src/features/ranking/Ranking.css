@@ -63,6 +63,12 @@
   z-index: 1;
 }
 
+/* ── 등장 애니메이션 */
+@keyframes ranking-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .ranking__badge {
   display: inline-flex;
   padding: 10px 22px;
@@ -71,6 +77,7 @@
   background: rgba(255, 201, 61, 0.18);
   font-weight: 700;
   font-size: 20px;
+  animation: ranking-fade-up 0.5s ease both;
 }
 
 .ranking__title {
@@ -79,6 +86,8 @@
   font-weight: 400;
   font-size: 80px;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 26px rgba(210, 6, 6, 0.6);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.08s;
 }
 
 .ranking__status {
@@ -135,7 +144,21 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 2px solid transparent;
+  opacity: 0;
+  animation: ranking-fade-up 0.4s ease both;
+  animation-delay: 0.2s;
 }
+/* 목록이 순서대로 쌓이며 등장하도록 행마다 살짝 딜레이를 둡니다 */
+.ranking__row:nth-child(1) { animation-delay: 0.2s; }
+.ranking__row:nth-child(2) { animation-delay: 0.25s; }
+.ranking__row:nth-child(3) { animation-delay: 0.3s; }
+.ranking__row:nth-child(4) { animation-delay: 0.35s; }
+.ranking__row:nth-child(5) { animation-delay: 0.4s; }
+.ranking__row:nth-child(6) { animation-delay: 0.45s; }
+.ranking__row:nth-child(7) { animation-delay: 0.5s; }
+.ranking__row:nth-child(8) { animation-delay: 0.55s; }
+.ranking__row:nth-child(9) { animation-delay: 0.6s; }
+.ranking__row:nth-child(10) { animation-delay: 0.65s; }
 
 .ranking__row--me {
   background: rgba(255, 255, 255, 0.1);
@@ -182,6 +205,8 @@
   display: flex;
   gap: 24px;
   margin-top: 16px;
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.75s;
 }
 
 .ranking__cta {
@@ -260,6 +285,8 @@
   gap: 16px;
   width: 148px;
   text-align: left;
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.3s;
 }
 .camera__frame-selector-title {
   margin: 0 0 4px;
@@ -327,6 +354,7 @@
   background: rgba(46, 199, 112, 0.18);
   font-weight: 700;
   font-size: 20px;
+  animation: ranking-fade-up 0.5s ease both;
 }
 
 .camera__title {
@@ -334,6 +362,8 @@
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 56px;
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.08s;
 }
 
 .camera__subtitle {
@@ -342,6 +372,8 @@
   font-weight: 500;
   font-size: 22px;
   color: rgba(255, 255, 255, 0.6);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.16s;
 }
 
 .camera__polaroid {
@@ -351,6 +383,8 @@
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.24s;
 }
 .camera__polaroid--dots {
   background-color: #fff;
@@ -498,12 +532,15 @@
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 60px;
+  animation: ranking-fade-up 0.5s ease both;
 }
 .qr__subtitle {
   margin: 0;
   font-weight: 500;
   font-size: 22px;
   color: rgba(255, 255, 255, 0.6);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.08s;
 }
 .qr__card {
   display: flex;
@@ -514,6 +551,8 @@
   border-radius: 32px;
   background: #fff;
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
+  animation: ranking-fade-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.2s;
 }
 .qr__placeholder {
   margin: 0;
@@ -527,6 +566,8 @@
   max-width: 560px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.45);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.35s;
 }
 .qr__cta {
   display: inline-flex;
@@ -542,4 +583,6 @@
   font-weight: 700;
   font-size: 32px;
   cursor: pointer;
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.45s;
 }

@@ -108,6 +108,24 @@
   z-index: 1;
 }
 
+/* ── 등장 애니메이션 — 피드백: 점수 텍스트에 금속 광택, 점수가 먼저 뜨고
+   메달(도장)이 나중에 확대→축소로 등장. 나머지 화면도 요소별로 살짝
+   순서를 두고 나타나게 했습니다. */
+@keyframes result-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes result-stamp-in {
+  0% { opacity: 0; transform: scale(2.6) rotate(-8deg); }
+  55% { opacity: 1; transform: scale(0.82) rotate(4deg); }
+  75% { transform: scale(1.08) rotate(-15deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-12deg); }
+}
+@keyframes result-shine-sweep {
+  0% { background-position: -220% 0; }
+  55%, 100% { background-position: 220% 0; }
+}
+
 /* ── CTA 버튼 (공용) */
 .result__cta {
   display: inline-flex;
@@ -131,6 +149,14 @@
 .result__cta:disabled { opacity: 0.5; cursor: not-allowed; }
 .result__cta--nickname { padding: 24px 48px; font-size: 32px; }
 
+.result__cta {
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.5s;
+}
+.result__cta--gameover { animation-delay: 0.42s; }
+.result__cta--nickname { animation-delay: 0.5s; }
+.result__cta--reveal { animation-delay: 1.3s; }
+
 /* ── 05b 게임 종료 */
 .result__mascot {
   position: absolute;
@@ -138,10 +164,16 @@
   bottom: -80px;
   width: 620px;
   height: auto;
-  opacity: 0.33;
   object-fit: contain;
   pointer-events: none;
   z-index: 0;
+  opacity: 0;
+  animation: result-mascot-in 0.7s ease both;
+  animation-delay: 0.1s;
+}
+@keyframes result-mascot-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 0.33; transform: translateX(0); }
 }
 
 .result__badge {
@@ -155,6 +187,7 @@
 .result__badge--danger {
   background: rgba(255, 71, 89, 0.16);
   border: 1.5px solid #ff4759;
+  animation: result-fade-up 0.5s ease both;
 }
 
 .result__gameover-title {
@@ -162,6 +195,8 @@
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 90px;
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.08s;
 }
 
 .result__gameover-body {
@@ -172,6 +207,8 @@
   font-weight: 700;
   font-size: 28px;
   color: rgba(255, 255, 255, 0.62);
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.18s;
 }
 
 .result__gameover-label {
@@ -179,13 +216,23 @@
   font-weight: 700;
   font-size: 24px;
   color: rgba(255, 255, 255, 0.6);
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.3s;
 }
 
 .result__gameover-score {
   margin: 0;
   font-family: 'Black Han Sans', var(--font-base);
   font-size: 96px;
-  color: #ffc93d;
+  /* 금속 광택 — 금색 그라디언트를 텍스트에 클립하고 주기적으로 쓸어가듯 이동 */
+  background: linear-gradient(100deg, #a9720f 0%, #ffe6a0 18%, #ffc93d 36%, #fff8e0 50%, #ffc93d 64%, #a9720f 82%, #ffc93d 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: result-fade-up 0.5s ease both, result-shine-sweep 3.2s ease-in-out infinite;
+  animation-delay: 0.4s, 0.9s;
 }
 
 /* ── 06 닉네임 입력 */
@@ -194,6 +241,7 @@
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 72px;
+  animation: result-fade-up 0.5s ease both;
 }
 
 .result__nickname-subtitle {
@@ -201,6 +249,8 @@
   font-weight: 500;
   font-size: 24px;
   color: rgba(255, 255, 255, 0.6);
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.1s;
 }
 
 .result__nickname-field {
@@ -216,6 +266,8 @@
   border: 3px solid #3b7afa;
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 0 30px 0 rgba(59, 122, 250, 0.35);
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.2s;
 }
 .result__nickname-field--error {
   border-color: #ff4759;
@@ -244,6 +296,8 @@
   font-weight: 500;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.4);
+  animation: result-fade-up 0.5s ease both;
+  animation-delay: 0.3s;
 }
 
 .result__nickname-error {
@@ -259,12 +313,14 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* ── 07 결과 */
+/* ── 07 결과
+   피드백 반영: 점수가 먼저 뜨고, 메달(도장)이 나중에 확대→축소로 등장 */
 .result__reveal-eyebrow {
   margin: 0;
   font-weight: 700;
   font-size: 30px;
   color: rgba(255, 255, 255, 0.76);
+  animation: result-fade-up 0.45s ease both;
 }
 
 .result__reveal-title {
@@ -272,19 +328,32 @@
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 72px;
+  animation: result-fade-up 0.45s ease both;
+  animation-delay: 0.08s;
 }
 
+/* 메달(도장) — 점수가 뜨고 난 다음에 확대→축소하며 도장 찍히듯 등장 */
 .result__medal {
   font-size: 110px;
   line-height: 1;
-  transform: rotate(-12deg);
+  opacity: 0;
+  animation: result-stamp-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.55s;
 }
 
 .result__reveal-score {
   margin: 0;
   font-family: 'Black Han Sans', var(--font-base);
   font-size: 140px;
-  color: #ffc93d;
+  /* 금속 광택 효과 — 금색 그라디언트를 텍스트에 클립하고 주기적으로 쓸어가듯 이동 */
+  background: linear-gradient(100deg, #a9720f 0%, #ffe6a0 18%, #ffc93d 36%, #fff8e0 50%, #ffc93d 64%, #a9720f 82%, #ffc93d 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: result-fade-up 0.45s ease both, result-shine-sweep 3.2s ease-in-out infinite;
+  animation-delay: 0.18s, 0.75s;
 }
 .result__reveal-score-unit {
   margin-left: 8px;
@@ -304,6 +373,8 @@
   background: rgba(255, 201, 61, 0.12);
   font-weight: 700;
   font-size: 24px;
+  animation: result-fade-up 0.45s ease both;
+  animation-delay: 0.85s;
 }
 
 .result__stats-row {
@@ -323,10 +394,12 @@
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.2);
+  animation: result-fade-up 0.4s ease both;
+  animation-delay: 0.95s;
 }
 .result__stat-card--correct { border-color: rgba(46, 199, 112, 0.5); }
-.result__stat-card--combo { border-color: rgba(255, 46, 120, 0.5); }
-.result__stat-card--accuracy { border-color: rgba(59, 122, 250, 0.5); }
+.result__stat-card--combo { border-color: rgba(255, 46, 120, 0.5); animation-delay: 1.02s; }
+.result__stat-card--accuracy { border-color: rgba(59, 122, 250, 0.5); animation-delay: 1.09s; }
 
 .result__stat-value {
   margin: 0;
