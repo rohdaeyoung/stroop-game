@@ -5,6 +5,7 @@
 // ⚠️ 카메라 접근은 브라우저 보안 정책상 HTTPS 또는 localhost 에서만 동작해요.
 //    같은 와이파이 IP(http://192.168.x.x:5173)로 열면 카메라 권한 자체가 안 뜰 수 있어요.
 import { useEffect, useRef, useState } from 'react'
+import shutterArrows from './assets/shutter-arrows.png'
 
 const FRAME_OPTIONS = [
   { key: 'basic', label: '기본 프레임' },
@@ -175,6 +176,11 @@ export default function CameraStep({ onNext, onSkip }) {
         disabled={phase !== 'live'}
         aria-label="촬영 시작"
       />
+
+      {/* 피그마에 있던 손그림 화살표 — 셔터를 누르라고 가리키는 장식. 누를 수 있는 동안만 보여줍니다 */}
+      {phase === 'live' && (
+        <img className="camera__shutter-arrows" src={shutterArrows} alt="" aria-hidden="true" />
+      )}
 
       <div className="camera__actions">
         {phase === 'captured' ? (

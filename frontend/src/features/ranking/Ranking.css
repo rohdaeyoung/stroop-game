@@ -431,6 +431,17 @@
 .camera__shutter-dot--pulse {
   animation: camera-shutter-pulse 1s ease-in-out infinite;
 }
+
+/* 셔터를 누르라고 가리키는 손그림 화살표 (피그마 원본 장식 요소) */
+.camera__shutter-arrows {
+  position: absolute;
+  right: 160px;
+  bottom: 90px;
+  width: 220px;
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+}
 @keyframes camera-shutter-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(0.85); opacity: 0.7; }
