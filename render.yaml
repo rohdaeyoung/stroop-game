@@ -37,7 +37,7 @@ services:
     runtime: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
-    region: singapore
+    # static site 에는 region 을 지정할 수 없습니다 (Render 가 CDN 으로 배포합니다)
     autoDeploy: true
     envVars:
       # 백엔드 주소 + /api  (예: https://stroop-api.onrender.com/api)
