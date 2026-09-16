@@ -27,7 +27,7 @@ export const GUIDE_TEXT = {
   wrongTitle: '확신의 오답입니다~!',
   wrongDescTemplate: (wordLabel, inkLabel) =>
     `"${wordLabel}"은 ${inkLabel}색으로 쓰여 있었는데, 정답은 ${inkLabel}이었습니다. 본 게임으로 만회 고고링~`,
-  wrongAdvanceCta: '본 게임에서 만회하기',
+  wrongAdvanceCta: '본 게임에서 본때를 보여주기',
 
   // 연습 문제 — 정답
   correctBanner: '이번 문제 모드: 글자의 "색"을 고르세요',
