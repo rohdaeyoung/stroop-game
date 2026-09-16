@@ -22,7 +22,7 @@
 3. 제한시간 안에 정답을 터치합니다.
 4. 연속으로 맞추면 **콤보 보너스**, 빨리 누르면 **속도 보너스**.
 5. 진행할수록 **제한시간은 짧아지고 선택지는 늘어납니다.**
-6. 오답 3회 또는 30초 경과 시 게임 오버 → 랭킹 등록!
+6. 오답·미응답 합쳐 3회 또는 30초 경과 시 게임 오버 → 랭킹 등록!
 
 ---
 
@@ -86,131 +86,227 @@ git push -u origin feat/game/timer
 
 ---
 
-## 🏃 실행 방법
+## 🏃 로컬에서 개발할 때
 
-### Frontend
+> 부스 운영에는 필요 없습니다. 아래는 **코드를 고칠 때만** 쓰는 방법입니다.
+> 게임을 해보기만 할 거라면 https://stroop-game.onrender.com 를 열면 됩니다.
+
+**터미널 두 개**가 필요합니다. 둘 다 켜둔 채로 두세요.
+
+### ① 백엔드 — DB 설치가 필요 없습니다
+
+```bash
+cd backend
+./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+`dev` 프로필은 **메모리 안에서 도는 H2 데이터베이스**를 씁니다. MySQL 을 따로 설치하지 않아도 바로 실행됩니다.
+
+> ⚠️ 메모리라서 **서버를 끄면 그동안 저장한 랭킹이 사라집니다.** 개발용이라 그렇고, 배포된 서비스는 TiDB 에 저장되므로 지워지지 않습니다.
+
+잘 떴는지 확인:
+```bash
+curl http://localhost:8080/api/health
+```
+
+### ② 프론트
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Backend
+브라우저에서 http://localhost:5173 (포트가 쓰이고 있으면 5174, 5175...)
+
+### 자주 겪는 문제
+
+**"서버에 문제가 생겼습니다"가 뜬다**
+→ 백엔드가 안 켜져 있습니다. ①번 터미널을 확인하세요. 프론트만 켜면 점수 제출이 안 됩니다.
+
+**403 / CORS 오류가 뜬다**
+→ 프론트가 5176 이상 포트로 떴을 수 있습니다. `application-dev.yml` 의 `CORS_ORIGIN` 에 해당 포트를 추가하세요.
+
+**진짜 MySQL 로 붙여보고 싶다면**
+→ `application-local.yml.example` 을 `application-local.yml` 로 복사해 접속 정보를 채우고, `--args='--spring.profiles.active=local'` 로 실행하세요.
+
+---
+
+## 🌐 배포 완료 — 링크만 열면 됩니다
+
+**2026-09-16 배포 완료.** 부스에서는 아래 주소만 열면 게임이 돌아갑니다. 로컬에서 서버를 켤 필요가 없습니다.
+
+| | 주소 |
+|---|---|
+| 🎮 **게임 (부스에서 여는 주소)** | **https://stroop-game.onrender.com** |
+| 서버 API | https://stroop-api.onrender.com |
+
+```
+ 아이패드 브라우저
+      │  https://stroop-game.onrender.com
+      ▼
+ Render Static Site (stroop-game)      프론트 · CDN · 항상 즉시 응답
+      │  https://stroop-api.onrender.com/api
+      ▼
+ Render Web Service (stroop-api)       Spring Boot · Docker · 싱가포르
+      │  MySQL 프로토콜 + TLS
+      ▼
+ TiDB Cloud Serverless (stroop)        랭킹 기록 저장 · 싱가포르
+```
+
+---
+
+## 🔌 "DB 서버를 켠다"는 작업은 없습니다
+
+자주 오해하는 부분이라 정리합니다.
+
+**TiDB Cloud 와 Render 는 24시간 켜져 있습니다.** 누가 켜고 끄는 것이 아닙니다.
+
+| | 상태 |
+|---|---|
+| TiDB Cloud (DB) | **항상 켜져 있음.** 끄는 기능 자체가 없습니다 |
+| Render 프론트 | **항상 켜져 있음.** 정적 파일이라 잠들지 않습니다 |
+| Render 백엔드 | **15분간 아무도 안 쓰면 잠듭니다** ← 유일하게 신경 쓸 부분 |
+
+### 백엔드가 잠들면 어떻게 되나
+
+무료 플랜이라 15분 동안 요청이 없으면 백엔드가 절전에 들어갑니다. 그 뒤 첫 요청은 **1~2분** 걸립니다.
+
+> 실제로 재보니 **114초** 걸렸습니다 (2026-09-16 측정). Render 안내는 50초 이상이라고만 되어 있는데, 그보다 오래 걸릴 수 있습니다.
+
+- 게임 화면은 **바로 뜹니다** (프론트는 안 잠듦)
+- 점수 제출이나 랭킹 조회에서만 기다리게 됩니다
+
+### 깨우는 방법 — 누구나 할 수 있습니다
+
+부스 열기 **10분 전에 브라우저로 이 주소를 한 번 열기만** 하면 됩니다. 화면이 하얗게 멈춰 있어도 **2분까지는 기다려주세요.** 깨어나는 중입니다.
+
+```
+https://stroop-api.onrender.com/api/health
+```
+
+화면에 `{"status":"UP"}` 같은 응답이 뜨면 깨어난 것입니다. 처음에는 50초쯤 걸리니 기다려주세요.
+
+터미널이 편하면 이것도 같습니다.
+
 ```bash
-cd backend
-./gradlew bootRun
+curl https://stroop-api.onrender.com/api/health
 ```
-MySQL이 먼저 떠 있어야 합니다. `backend/src/main/resources/application-local.yml` 참고.
+
+**사람이 계속 게임을 하는 동안에는 잠들지 않습니다.** 점심시간처럼 한동안 비는 경우에만 다시 깨워주면 됩니다.
+
+> 💡 행사 당일만 Render 백엔드를 Starter 플랜($7/월)으로 올리면 절전 자체가 없어집니다. 하루만 쓰고 내리면 하루치만 청구됩니다. 가장 확실한 방법입니다.
 
 ---
 
-## 🚀 배포 계획 (Render + TiDB Cloud)
+## 👥 누가 무엇을 할 수 있나
 
-> ⚠️ **아직 배포 전입니다.** 프론트·백엔드 개발이 끝나면 아래 구조로 합칩니다.
-> 담당: 노대영 · 고은우 / 지금은 각자 로컬 개발에 집중하세요.
+**결론부터: 부스 운영에 필요한 일은 팀원 누구나 할 수 있습니다.**
 
-### 구조
-
-```
- [ 사용자 브라우저 ]
-         │
-         ▼
- ┌─────────────────────┐
- │  Render Static Site │   frontend/  (Vite 빌드 결과물)
- │  어흥-색에-속지-마     │
- └──────────┬──────────┘
-            │  /api/* 호출
-            ▼
- ┌─────────────────────┐
- │  Render Web Service │   backend/  (Spring Boot, Docker 또는 Gradle)
- │  stroop-api         │
- └──────────┬──────────┘
-            │  MySQL 프로토콜 + TLS
-            ▼
- ┌─────────────────────┐
- │   TiDB Cloud        │   MySQL 호환 서버리스 DB
- │   Serverless        │
- └─────────────────────┘
-```
-
-| 레이어 | 서비스 | 비고 |
+| 하는 일 | 누가 | 필요한 것 |
 |---|---|---|
-| Frontend | Render **Static Site** | Vite 빌드 → 정적 호스팅. 무료 플랜에 콜드 스타트 없음 |
-| Backend | Render **Web Service** | Spring Boot. 무료 플랜은 **콜드 스타트 있음** (아래 주의사항) |
-| Database | **TiDB Cloud Serverless** | MySQL 8.0 호환. 무료 티어 제공 |
+| 게임 실행 | **누구나** (팀원 아니어도) | 링크만 |
+| 잠든 백엔드 깨우기 | **누구나** | 링크만 |
+| 코드 고쳐서 반영하기 | **팀원 전원** | GitHub 계정 |
+| DB 기록 조회 · 초기화 | **노대영 · 고은우** | TiDB Cloud 계정 |
+| 서버 로그 보기 · 환경변수 변경 | 노대영 | Render 계정 |
+
+고은우(@Gonu19)님은 TiDB Cloud 에 `Organization Member` + `stroop` 인스턴스
+`Instance Manager` 로 초대되어 있습니다. 랭킹 조회와 기록 삭제를 할 수 있고,
+클러스터 자체를 지울 권한은 없습니다.
+
+### 코드 수정은 이미 전원 가능합니다
+
+`main` 에 머지되면 **Render 가 자동으로 다시 배포합니다.** (`render.yaml` 의 `autoDeploy: true`)
+
+```
+브랜치 작업 → PR → 승인 1명 → main 머지 → 2~8분 뒤 자동 반영
+```
+
+Render 계정이 없어도 됩니다. **평소 하던 GitHub 작업 그대로 하면 배포까지 이어집니다.**
+
+### 노대영만 할 수 있는 일을 팀원에게 열어주려면
+
+부스 당일 문제가 생겼을 때 다른 사람도 대응할 수 있게 하려면 아래처럼 초대하면 됩니다.
+
+**TiDB Cloud** — 랭킹 기록 조회, 초기화 *(고은우님 초대 완료)*
+1. https://tidbcloud.com → `Organization Settings` → `Users` → `Invite`
+2. 이메일 입력
+3. 권한은 이렇게 줍니다
+
+| 항목 | 값 | 이유 |
+|---|---|---|
+| Organization Access | `Organization Member` | Owner 는 결제·멤버 관리까지 열려 과합니다 |
+| Instance Access | `Instance Manager` + `stroop` | 조회·삭제에 필요한 최소 권한 |
+
+> ⚠️ `Organization Owner` 로 주면 **클러스터를 통째로 지울 수 있습니다.** 랭킹 데이터가 날아가므로 `Member` + `Instance Manager` 조합을 쓰세요.
+
+**Render** — 로그 확인, 환경변수 변경, 수동 재배포
+1. https://dashboard.render.com → 좌측 상단 워크스페이스 이름 → `Settings`
+2. `Members` → `Invite` → 이메일 입력
+
+> Render 는 아직 `TrashMap` 워크스페이스에 들어 있습니다. 멤버를 초대하면 그 워크스페이스의 다른 서비스도 함께 보입니다. **분리하려면 새 워크스페이스를 만들고 `Transfer Service` 로 옮기면 되는데, 이때 서비스 주소가 바뀔 수 있어 `CORS_ORIGIN` 과 `VITE_API_BASE_URL` 을 다시 잡아야 합니다.** 행사가 끝난 뒤에 하는 편이 안전합니다.
+
+초대는 계정 소유자(노대영)만 보낼 수 있습니다.
 
 ---
 
-### 🔴 반드시 알아야 할 주의사항
+## 🗄️ 랭킹 기록 관리 (TiDB Cloud)
 
-#### 1. Render 무료 플랜 콜드 스타트 (제일 중요)
+부스 시작 전에 테스트 기록을 지우거나, 중간에 데이터를 확인할 때 씁니다.
 
-15분간 요청이 없으면 서버가 잠듭니다. 다음 요청은 **30~50초** 걸립니다.
+1. https://tidbcloud.com 접속 → `stroop` 클러스터 선택
+2. 왼쪽 `SQL Editor` 클릭
+3. 아래 SQL 을 실행
 
-랭킹 화면에서 이게 그대로 터집니다:
-
-- ❌ 사용자 입장: "랭킹이 안 뜨네? 고장났나?" → 이탈
-- ❌ fetch 타임아웃이 짧으면 **에러로 오인** → "서버 오류" 문구 노출
-
-**대응 (이혜원 · 고은우 확인 필요)**
-- [x] 랭킹/결과 화면 로딩 문구를 정직하게: `"서버를 깨우는 중이에요... (최대 1분)"`
-- [x] fetch 타임아웃을 **60초 이상**으로 (짧으면 멀쩡한 응답을 실패로 처리함)
-- [x] **연결 실패**와 **진짜 에러**를 구분해서 처리 — 잠든 서버를 "기록 없음"으로 표시하면 안 됨
-- [ ] 온보딩 화면 진입 시 백그라운드로 `GET /api/rankings` 한 번 찔러서 미리 깨우기 (워밍업)
-
-> 💡 워밍업 팁: 사용자가 온보딩 화면을 읽고 게임을 1분 플레이하는 동안 서버가 깨어납니다.
-> 결과 화면에 도달할 때쯤이면 이미 준비 완료 상태가 됩니다.
-
-#### 2. TiDB Cloud는 MySQL "호환"이지 MySQL이 아님
-
-로컬 MySQL에서 되던 게 TiDB에서 안 될 수 있습니다.
-
-- [ ] **TLS 연결 필수** — JDBC URL에 `useSSL=true&requireSSL=true` 필요
-- [ ] **FOREIGN KEY 제약이 제한적** — 지금은 테이블이 `score` 하나라 문제없지만, 나중에 테이블 추가 시 주의
-- [ ] **AUTO_INCREMENT가 연속이 아님** — id가 1,2,3이 아니라 튈 수 있음. **id를 순위 계산에 쓰지 말 것** (현재 코드는 `score` 컬럼 기준이라 OK)
-- [ ] 배포 전에 **TiDB에 한 번 붙여서 전체 기능 테스트** 필수
-
-#### 3. 환경변수 (절대 코드에 하드코딩 금지)
-
-Render 대시보드의 Environment에 등록합니다.
-
-**Backend (Web Service)**
-```
-SPRING_PROFILES_ACTIVE = prod
-DB_URL      = jdbc:mysql://<TiDB호스트>:4000/stroop?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-DB_USERNAME = <TiDB 사용자명>
-DB_PASSWORD = <TiDB 비밀번호>
-CORS_ORIGIN = https://<프론트주소>.onrender.com
+**기록 확인**
+```sql
+SELECT id, nickname, score, max_combo, created_at
+FROM stroop.score
+ORDER BY score DESC, created_at ASC
+LIMIT 20;
 ```
 
-**Frontend (Static Site)**
-```
-VITE_API_BASE_URL = https://stroop-api.onrender.com
+**몇 명이 참여했는지**
+```sql
+SELECT COUNT(*) AS 참여수, MAX(score) AS 최고점 FROM stroop.score;
 ```
 
-> 로컬 개발용 `application-local.yml` 은 `.gitignore` 처리되어 있습니다. **DB 비밀번호를 커밋하지 마세요.**
-> public 레포라서 한 번 올라가면 누구나 볼 수 있습니다.
+**⚠️ 전체 기록 삭제 (부스 시작 전에만)**
+```sql
+DELETE FROM stroop.score;
+```
+
+> `DELETE` 는 되돌릴 수 없습니다. 부스가 끝난 뒤 기록을 남기고 싶다면 먼저 위의 조회 결과를 복사해두세요.
 
 ---
 
-### 배포 전 체크리스트
+## 🧯 부스에서 문제가 생기면
 
-**공통**
-- [ ] `main` 브랜치에 모든 기능이 머지 완료
-- [ ] 로컬에서 프론트-백 연동 전체 플로우 테스트 (온보딩 → 게임 → 결과 제출 → 랭킹)
+| 증상 | 원인 | 대처 |
+|---|---|---|
+| 점수 제출이 1~2분 걸림 | 백엔드 절전 | 정상입니다. 한 번 깨면 그 뒤로는 1초 안에 끝납니다 |
+| "서버에 문제가 생겼습니다" | 백엔드 절전 또는 장애 | `/api/health` 를 열어 깨우고 다시 시도 |
+| 랭킹이 비어 보임 | 아직 기록이 없음 | 정상 |
+| 카메라가 안 켜짐 | 브라우저 권한 거부 | 주소창 옆 자물쇠 → 카메라 허용 |
+| QR 을 찍어도 사진이 안 열림 | 5분이 지나 만료됨 | 정상입니다. 다시 촬영하면 됩니다 |
+| 화면이 전혀 안 뜸 | Render 장애 | https://status.render.com 확인 |
 
-**Backend (고은우 · 노대영)**
-- [ ] `application-prod.yml` 작성 (환경변수 주입 방식)
-- [ ] `ddl-auto: update` → **`validate`** 로 변경 (운영 DB 스키마 사고 방지)
-- [ ] CORS 허용 주소를 배포된 프론트 주소로 변경 (현재 `localhost:5173` 하드코딩)
-- [ ] TiDB Cloud에 스키마 생성 (`backend/src/main/resources/schema.sql`)
-- [ ] Health check 엔드포인트 추가 (Render가 서버 상태 확인용)
+**백엔드가 살아있는지 확인하는 가장 빠른 방법**
 
-**Frontend (전원)**
-- [ ] API 주소를 환경변수로 분리 (현재 `shared/api/client.js` 의 `/api` 프록시는 개발 전용)
-- [ ] `npm run build` 성공 확인
-- [ ] 모바일 실기기에서 터치 반응 테스트
-- [ ] 콜드 스타트 로딩 UI 적용 (위 1번 항목)
+```
+https://stroop-api.onrender.com/api/health
+```
+
+---
+
+## 📱 아이패드 설정 (부스 준비)
+
+- **Safari 로 게임 주소를 연 뒤 공유 → 홈 화면에 추가** — 주소창 없이 전체화면으로 뜹니다
+- **자동 잠금 끄기**: 설정 → 디스플레이 및 밝기 → 자동 잠금 → **안 함**
+- **저전력 모드 끄기** (화면이 어두워집니다)
+- 인증샷을 쓸 거라면 **카메라 권한을 미리 허용**해두세요
+- 화면이 1920×1080 기준이라 아이패드 비율에서는 위아래 여백이 생깁니다 (잘리지는 않습니다)
 
 ---
 

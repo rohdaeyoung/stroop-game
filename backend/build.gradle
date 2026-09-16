@@ -19,8 +19,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // 도메인 계층 테스트(@DataJpaTest)용 인메모리 DB. 운영에는 포함되지 않는다.
+    // 인메모리 DB. 테스트(@DataJpaTest)와 dev 프로필에서 쓴다.
+    // developmentOnly 라 bootJar(배포 산출물)에는 포함되지 않는다.
     testRuntimeOnly 'com.h2database:h2'
+    developmentOnly 'com.h2database:h2'
 }
 
 tasks.named('test') { useJUnitPlatform() }

@@ -4,8 +4,8 @@
 
 :root {
   /* ── 배경 / 텍스트 */
-  --color-bg: #0e0e14;
-  --color-surface: #1b1b26;
+  --color-bg: #0b0b19;
+  --color-surface: #171725;
   --color-text: #f5f5f7;
   --color-text-dim: #9a9aa8;
 
@@ -16,12 +16,13 @@
   --color-danger: #ff3b30;
   --color-warning: #ffb302;
 
-  /* ── 스트루프 게임용 색상 (이름과 실제 색이 정확히 일치해야 함!) */
-  --stroop-red: #ff3b30;
-  --stroop-blue: #0a84ff;
-  --stroop-green: #30d158;
-  --stroop-yellow: #ffd60a;
-  --stroop-purple: #bf5af2;
+  /* ── 스트루프 게임용 색상 (Figma 확정 시안 4색)
+     이름과 실제 색이 정확히 일치해야 합니다. 색을 늘리거나 줄이면
+     shared/constants/colors.js 와 difficulty.js 의 choiceCount 도 함께 맞춰야 합니다. */
+  --stroop-red: #ff5363;
+  --stroop-blue: #3b7afa;
+  --stroop-green: #2ec770;
+  --stroop-yellow: #ffc93d;
 
   /* ── 타이포 */
   --font-base: 'Pretendard', -apple-system, system-ui, sans-serif;
