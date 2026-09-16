@@ -48,49 +48,82 @@
   font-weight: 400;
 }
 
-/* 배경 글로우 — 02/03/04 공통. 시작화면(01)은 --start 변형이 따로 있음
-   blur 값을 크게 주면 overflow:hidden 에 거의 다 잘려서 옆면이 뭉개져 보입니다
-   (features/result/Result.css 에서 이미 겪은 문제라 같은 값(60px)으로 맞췄습니다). */
-.onboarding::before,
-.onboarding::after {
-  content: '';
+/* 네 귀퉁이 배경 글로우 — 화면(step)이 바뀌어도 같은 DOM 엘리먼트를 계속 쓰므로
+   (OnboardingPage.jsx 참고) 색상 순환/좌우 이동 애니메이션이 화면 전환 때 끊기거나
+   리셋되지 않습니다. blur 값을 너무 크게 주면 overflow:hidden 에 거의 다 잘려서
+   옆면이 뭉개져 보여서(features/result/Result.css 에서 겪은 문제) 60px 로 맞췄습니다. */
+.onboarding__glow {
   position: absolute;
   width: 640px;
   height: 640px;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.6;
+  opacity: 0.78;
   pointer-events: none;
   z-index: 0;
+  background: radial-gradient(circle, var(--glow-color), transparent 72%);
+  animation: onboarding-glow-drift var(--drift-duration) ease-in-out infinite,
+             onboarding-glow-hue var(--hue-duration) linear infinite;
 }
-.onboarding::before {
+.onboarding__glow--1 {
   left: -220px;
   top: -260px;
-  background: radial-gradient(circle, var(--ob-green), transparent 72%);
+  --glow-color: var(--ob-green);
+  --drift-duration: 13s;
+  --hue-duration: 16s;
+  animation-delay: 0s, -3s;
 }
-.onboarding::after {
+.onboarding__glow--2 {
   right: -260px;
   top: -260px;
-  background: radial-gradient(circle, var(--ob-blue), transparent 72%);
+  --glow-color: var(--ob-blue);
+  --drift-duration: 11s;
+  --hue-duration: 14s;
+  animation-delay: -4s, -8s;
+}
+.onboarding__glow--3 {
+  left: -260px;
+  bottom: -260px;
+  --glow-color: var(--ob-red);
+  --drift-duration: 15s;
+  --hue-duration: 18s;
+  animation-delay: -7s, -5s;
+}
+.onboarding__glow--4 {
+  right: -280px;
+  bottom: -240px;
+  --glow-color: var(--ob-yellow);
+  --drift-duration: 12s;
+  --hue-duration: 15s;
+  animation-delay: -9s, -11s;
 }
 
-/* 01_대기화면 — 네 귀퉁이 컬러 글로우 */
-.onboarding--start::before {
-  inset: 0;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  opacity: 1;
-  filter: none;
-  background:
-    radial-gradient(circle at 8% 10%, rgba(255, 59, 48, 0.35), transparent 35%),
-    radial-gradient(circle at 92% 8%, rgba(10, 132, 255, 0.35), transparent 35%),
-    radial-gradient(circle at 6% 92%, rgba(48, 209, 88, 0.28), transparent 35%),
-    radial-gradient(circle at 94% 90%, rgba(255, 214, 10, 0.28), transparent 35%);
+@keyframes onboarding-glow-drift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(260px, -130px); }
+  50%  { transform: translate(100px, 190px); }
+  75%  { transform: translate(-220px, 70px); }
+  100% { transform: translate(0, 0); }
 }
-.onboarding--start::after { content: none; }
+
+@keyframes onboarding-glow-hue {
+  from { filter: blur(60px) hue-rotate(0deg); }
+  to { filter: blur(60px) hue-rotate(360deg); }
+}
+
+/* 화면(step)이 바뀌어 새 콘텐츠가 마운트될 때 살짝 페이드인 + 위로 스윽 올라오는
+   느낌을 줘서, 대기화면 쪽의 페이드아웃(--leaving)과 합쳐서 전환이 부드럽게 이어집니다. */
+@keyframes onboarding-step-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 버튼을 눌러 다음 화면으로 넘어갈 때 재생되는 페이드아웃 — 대기화면(--leaving)과
+   똑같이 0.22s 로 맞춰서 어떤 버튼을 눌러도 전환 속도가 동일하게 느껴집니다. */
+@keyframes onboarding-step-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-14px); }
+}
 
 /* LIKELION SKU 로고 — 모든 온보딩 화면 상단 고정 (Figma: image 1, 세로로 그려진 걸 90deg 회전) */
 .onboarding__brand {
@@ -125,19 +158,37 @@
   filter: blur(5.3px);
   z-index: 0;
   pointer-events: none;
+  transition: opacity 0.2s ease;
 }
+.onboarding__watermark--leaving { opacity: 0; }
 
+/* 피그마 center_content 실측 절대좌표 (기준 프레임, 935px 폭 중앙정렬용 래퍼).
+   내부 4개 요소는 각각 피그마 절대좌표(top)를 그대로 씁니다 — flex gap이나
+   margin 누적 방식은 실제 렌더링 글꼴 높이에 따라 오차가 생겨서 지양합니다. */
 .onboarding__start {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 50%;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 32px;
   width: 935px;
+  height: 1080px;
+  pointer-events: none;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity 0.2s ease, transform 0.22s ease;
 }
+.onboarding__start--leaving {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-24px);
+}
+.onboarding__start > * { pointer-events: auto; }
 
 .onboarding__title.onboarding__title--stroop {
+  position: absolute;
+  top: 328.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
   font-size: 132px;
   line-height: 1.15;
   white-space: nowrap;
@@ -148,17 +199,41 @@
 }
 
 .onboarding__tagline {
+  position: absolute;
+  top: 515.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
   font-size: 38px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+.onboarding__start > .onboarding__start-cta {
+  position: absolute;
+  top: 622.5px;
+  left: 50%;
   margin: 0;
 }
 
+/* 가로 중앙정렬(translateX(-50%))과 눌렀을 때 축소(scale)를 같은 transform
+   프로퍼티에 같이 써야 해서, 두 값을 각자 커스텀 프로퍼티로 분리합니다.
+   (버튼을 쓰는 위치마다 top/left만 다르고 transform 자체는 항상 이 조합이어야
+   가운데 정렬이 깨지지 않습니다 — :active 에서 transform 을 통째로 덮어쓰면
+   translateX(-50%)가 사라져서 버튼이 오른쪽으로 튀어버립니다.) */
 .onboarding__start-cta {
+  --press-scale: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   margin: 0;
+  /* 대기화면/모드소개 화면 두 버튼이 글자 길이가 달라서 자동 너비로 두면
+     서로 다른 크기로 보여서, 고정 너비(피그마 대기화면 버튼 기준 607px)로
+     통일합니다. */
+  width: 607px;
+  box-sizing: border-box;
   padding: 30px 64px;
   border: none;
   border-radius: 999px;
@@ -167,27 +242,47 @@
   font-family: 'Noto Sans KR', var(--font-base);
   font-size: 40px;
   font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 8px 46px 2px rgba(255, 46, 120, 0.5);
-  transition: transform 0.1s ease;
+  transform: translateX(-50%) scale(var(--press-scale));
+  /* 뗄 때는 느리게 튕기듯 되돌아오고(back-out), 누를 때는 :active 에서 훨씬
+     짧은 트랜지션으로 덮어써서 즉각 눌리는 느낌을 줍니다. */
+  transition: transform 0.35s cubic-bezier(0.34, 1.8, 0.64, 1), box-shadow 0.1s ease;
 }
 
-.onboarding__start-cta:active { transform: scale(0.96); }
+.onboarding__start-cta:active {
+  --press-scale: 0.9;
+  transition: transform 0.05s ease-out, box-shadow 0.1s ease;
+  box-shadow: 0 8px 46px 2px rgba(255, 46, 120, 0.5), 0 0 32px 8px rgba(255, 255, 255, 0.85);
+}
 
 .onboarding__meta {
+  position: absolute;
+  top: 772.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
   font-size: 26px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.55);
-  margin: 0;
+  white-space: nowrap;
 }
 
+/* 피그마엔 없는 기능성 버튼이라 실측 좌표가 없습니다 — 안내문구(top:772.5px) 바로 아래로 배치 */
 .onboarding__ranking-link {
+  position: absolute;
+  top: 820px;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.5);
   font-family: 'Noto Sans KR', var(--font-base);
   font-size: 20px;
+  white-space: nowrap;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -203,7 +298,10 @@
   font-size: 24px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+  transition: opacity 0.2s ease;
 }
+.onboarding__event-note--leaving { opacity: 0; }
 
 /* 상단 배지 / 배너 (모드 표시) — 03/03b/03c/04 공통 전체 폭 띠 */
 .onboarding__badge {
@@ -233,6 +331,10 @@
   height: 90px;
   padding: 0 40px;
   background: rgba(59, 122, 250, 0.16);
+  animation: onboarding-step-in 0.35s ease both;
+}
+.onboarding__banner--leaving {
+  animation: onboarding-step-out 0.22s ease forwards;
 }
 
 .onboarding__banner-text {
@@ -245,7 +347,9 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  animation: onboarding-step-in 0.35s ease both;
 }
+.onboarding__mode-intro--leaving { animation: onboarding-step-out 0.22s ease forwards; }
 
 .onboarding__mode-intro .onboarding__title {
   position: absolute;
@@ -269,23 +373,21 @@
   top: 250px;
   left: 50%;
   transform: translateX(-50%);
-  width: 1000px;
+  width: max-content;
 }
 
 .onboarding__mode-cards {
   position: absolute;
   top: 363px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 540px;
   display: flex;
-  gap: 32px;
+  gap: 38px;
 }
 
 .onboarding__mode-intro .onboarding__start-cta {
   position: absolute;
   top: 886px;
   left: 50%;
-  transform: translateX(-50%);
 }
 
 .onboarding__mode-card {
@@ -338,7 +440,9 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  animation: onboarding-step-in 0.35s ease both;
 }
+.onboarding__example--leaving { animation: onboarding-step-out 0.22s ease forwards; }
 
 .onboarding__example .onboarding__title {
   position: absolute;
@@ -355,10 +459,10 @@
   top: 258px;
   left: 50%;
   transform: translateX(-50%);
-  width: 1000px;
+  width: max-content;
   font-size: 32px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .onboarding__example-word-card {
@@ -405,7 +509,6 @@
   position: absolute;
   top: 967px;
   left: 50%;
-  transform: translateX(-50%);
   width: max-content;
 }
 
@@ -425,7 +528,9 @@
   color: #fff;
   cursor: pointer;
   box-shadow: 0 6px 24px var(--choice-shadow, transparent);
-  transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  /* 뗄 때는 느리게 튕기듯 되돌아오고(back-out), 누를 때는 :active 에서 훨씬
+     짧은 트랜지션으로 덮어써서 즉각 눌리는 느낌을 줍니다. */
+  transition: transform 0.35s cubic-bezier(0.34, 1.8, 0.64, 1), opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .onboarding__choice-badge {
@@ -438,15 +543,19 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
+/* 모드 카드 안의 미니 버튼은 실제 클릭 요소가 아니라 예시를 보여주는 표시용
+   <span>이라 커서/눌림 반응이 필요 없습니다. */
 .onboarding__choice--sm {
   width: 120px;
   padding: 0;
   height: 76px;
   border-radius: 18px;
   font-size: 26px;
+  cursor: default;
+  pointer-events: none;
 }
 
-.onboarding__choice:active { transform: scale(0.96); }
+.onboarding__choice:active { transform: scale(0.88); transition: transform 0.05s ease-out; }
 .onboarding__choice:disabled { cursor: default; }
 
 /* mini_btn (모드 카드 안) 오답 예시 — 흐리게 */
@@ -454,7 +563,11 @@
 /* 예시 문제 카드의 선택 안 된 나머지 — 조금 덜 흐리게 (피그마 실측 0.55) */
 .onboarding__choice--dim { opacity: 0.55; }
 
-.onboarding__choice--wrong { border: 5px solid #ed0606; }
+/* 오답을 골랐을 때 — 살짝 기울여서 "이건 틀렸다"는 느낌을 줍니다 */
+.onboarding__choice--wrong {
+  border: 5px solid #ed0606;
+  transform: rotate(-6deg);
+}
 
 /* mini_btn 정답 표시 — 흰 테두리 + 흰 글로우 */
 .onboarding__choice--highlight-sm {
@@ -462,13 +575,56 @@
   box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.9);
 }
 
-/* 예시 문제 카드의 정답 버튼 — 초록 테두리 + 파란 글로우 (피그마 고정값) */
+/* 예시 문제 카드의 정답 버튼 — 초록 테두리 + 파란 글로우 (피그마 고정값).
+   오답을 골랐을 때 정답 버튼이 흔들려서 플레이어 시선을 끌어줍니다. */
 .onboarding__choice--highlight {
-  border: 6px solid var(--ob-green);
-  box-shadow: 0 8px 56px rgba(3, 67, 196, 0.6);
+  border: 5px solid var(--ob-green);
+  box-shadow: 0 8px 28px rgba(3, 67, 196, 0.6);
+  animation: onboarding-choice-shake 0.5s ease-out;
+}
+
+@keyframes onboarding-choice-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-6px) rotate(-4deg); }
+  40% { transform: translateX(5px) rotate(3deg); }
+  60% { transform: translateX(-4px) rotate(-2deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+
+/* 정답을 맞혔을 때 word_card 중심에서 한 번 터지는 폭죽 */
+.onboarding__confetti {
+  position: absolute;
+  top: 537px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.onboarding__confetti-piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  animation-name: onboarding-confetti-burst;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes onboarding-confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--spin));
+    opacity: 0;
+  }
 }
 
 .onboarding__example-link {
+  --press-scale: 1;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -481,6 +637,25 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  /* translateX(-50%) 는 .onboarding__example 쪽 위치 지정 규칙이 원래 갖고
+     있었는데, :active 에서 scale 을 쓰려면 같은 transform 안에 같이 있어야
+     가운데 정렬이 안 깨져서 여기로 옮겼습니다. */
+  transform: translateX(-50%) scale(var(--press-scale));
+  transition: transform 0.35s cubic-bezier(0.34, 1.8, 0.64, 1);
+  /* 터치할 수 있는 곳이라는 걸 알려주는 흰색 글로우 깜빡임 */
+  animation: onboarding-link-glow 1.6s ease-in-out infinite;
+}
+
+.onboarding__example-link:active {
+  --press-scale: 0.94;
+  animation-play-state: paused;
+  transition: transform 0.05s ease-out;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.95), 0 0 40px rgba(255, 255, 255, 0.6);
+}
+
+@keyframes onboarding-link-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.4), 0 0 16px rgba(255, 255, 255, 0.2); }
+  50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.95), 0 0 40px rgba(255, 255, 255, 0.6); }
 }
 
 /* 카운트다운 (04) — Figma 실측 절대좌표 */
@@ -488,6 +663,16 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  animation: onboarding-step-in 0.35s ease both;
+}
+.onboarding__countdown--leaving { animation: onboarding-step-out 0.22s ease forwards; }
+
+/* --progress 를 <angle> 타입으로 등록해야 conic-gradient 안에서 값이 바뀔 때
+   브라우저가 뚝 끊지 않고 부드럽게 보간합니다 (등록 안 하면 매초 그냥 점프해요). */
+@property --progress {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
 }
 
 .onboarding__countdown-ring {
@@ -501,8 +686,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: conic-gradient(var(--ob-pink) var(--progress, 0deg), #24243a 0deg);
-  transition: background 0.9s linear;
+  --progress: 0deg;
+  background: conic-gradient(var(--ob-pink) var(--progress), #24243a 0deg);
+  transition: --progress 1s linear;
 }
 
 .onboarding__countdown-ring::before {

@@ -1,4 +1,14 @@
 // 👤 담당: 최복순 — 안내 문구는 전부 여기 모아둡니다.
+
+// "파랑"+"색" → "파란색" 처럼 색 이름 뒤에 "색"이 붙을 때만 관형사형으로 바뀌는
+// 것들이 있어서(빨강→빨간, 파랑→파란, 노랑→노란, 초록은 그대로) 여기서만 매핑합니다.
+const COLOR_ADJECTIVE = {
+  빨강: '빨간',
+  파랑: '파란',
+  노랑: '노란',
+  초록: '초록',
+}
+
 export const GUIDE_TEXT = {
   // 시작 화면
   brand: 'LIKELION SKU',
@@ -26,11 +36,10 @@ export const GUIDE_TEXT = {
   // 연습 문제 — 오답
   wrongTitle: '확신의 오답입니다~!',
   wrongDescTemplate: (wordLabel, inkLabel) =>
-    `"${wordLabel}"은 ${inkLabel}색으로 쓰여 있었는데, 정답은 ${inkLabel}이었습니다. 본 게임으로 만회 고고링~`,
+    `"${wordLabel}"은 ${COLOR_ADJECTIVE[inkLabel] ?? inkLabel}색으로 쓰여 있었는데, 정답은 ${inkLabel}이었습니다. 본 게임으로 만회 고고링~`,
   wrongAdvanceCta: '본 게임에서 본때를 보여주기',
 
   // 연습 문제 — 정답
-  correctBanner: '이번 문제 모드: 글자의 "색"을 고르세요',
   correctTitle: '어흥이가 인정!! 완벽해요 ^0^',
   correctDesc: '실제 색깔을 정확히 골라냈어요. 이제 진짜 게임을 시작해볼까요?',
   correctAdvanceCta: '여기를 누르면 진짜 게임이 시작돼요!',

@@ -24,18 +24,42 @@ const STEP = {
 
 const TITLE_CHARS = colorizeChars(GUIDE_TEXT.title)
 
+// 대기화면에서 다음 화면으로 넘어갈 때 뚝 끊기지 않도록, 먼저 살짝 페이드아웃 시킨
+// 다음에 실제로 step 을 바꿉니다 (이 시간과 Onboarding.css 의 --leaving 트랜지션
+// 지속시간을 맞춰야 합니다).
+const LEAVE_TRANSITION_MS = 220
+
 export default function OnboardingPage() {
   const navigate = useNavigate()
   const { scale } = useKioskScale()
   const [step, setStep] = useState(STEP.START)
+  const [isLeaving, setIsLeaving] = useState(false)
+
+  // 어떤 단계에서 다음 단계로 넘어가든 (버튼을 눌러서 넘어가는 화면 전환은 전부)
+  // 항상 같은 속도로 페이드아웃 → 전환 → 페이드인 되도록 하나의 함수로 통일합니다.
+  function advanceStep(next) {
+    setIsLeaving(true)
+    setTimeout(() => {
+      next()
+      setIsLeaving(false)
+    }, LEAVE_TRANSITION_MS)
+  }
+
+  function goToModeIntro() {
+    advanceStep(() => setStep(STEP.MODE_INTRO))
+  }
 
   return (
     <div className="onboarding-kiosk">
       <div className="onboarding-kiosk__canvas" style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
-        <div
-          className={`onboarding${step === STEP.START ? ' onboarding--start' : ''}`}
-          onClick={step === STEP.START ? () => setStep(STEP.MODE_INTRO) : undefined}
-        >
+        <div className="onboarding" onClick={step === STEP.START && !isLeaving ? goToModeIntro : undefined}>
+          {/* 화면이 바뀌어도 같은 DOM 엘리먼트가 유지되어야 애니메이션(색상/이동)이
+              끊기지 않아서, step 조건문 밖에 항상 렌더링합니다. */}
+          <div className="onboarding__glow onboarding__glow--1" aria-hidden="true" />
+          <div className="onboarding__glow onboarding__glow--2" aria-hidden="true" />
+          <div className="onboarding__glow onboarding__glow--3" aria-hidden="true" />
+          <div className="onboarding__glow onboarding__glow--4" aria-hidden="true" />
+
           {(step === STEP.START || step === STEP.MODE_INTRO) && (
             <div className="onboarding__brand">
               <img src={likelionWordmark} alt="LIKELION SKU" />
@@ -44,8 +68,13 @@ export default function OnboardingPage() {
 
           {step === STEP.START && (
             <>
-              <img className="onboarding__watermark" src={likelionLogo} alt="" aria-hidden="true" />
-              <div className="onboarding__start">
+              <img
+                className={`onboarding__watermark${isLeaving ? ' onboarding__watermark--leaving' : ''}`}
+                src={likelionLogo}
+                alt=""
+                aria-hidden="true"
+              />
+              <div className={`onboarding__start${isLeaving ? ' onboarding__start--leaving' : ''}`}>
                 <h1 className="onboarding__title onboarding__title--stroop onboarding__display">
                   {TITLE_CHARS.map(({ char, color }, i) => (
                     <span key={i} style={color ? { color } : undefined}>
@@ -61,7 +90,7 @@ export default function OnboardingPage() {
                   className="onboarding__start-cta"
                   onClick={(event) => {
                     event.stopPropagation()
-                    setStep(STEP.MODE_INTRO)
+                    goToModeIntro()
                   }}
                 >
                   {GUIDE_TEXT.startCta} →
@@ -81,15 +110,23 @@ export default function OnboardingPage() {
                 </button>
               </div>
 
-              <p className="onboarding__event-note">{GUIDE_TEXT.eventNote}</p>
+              <p className={`onboarding__event-note${isLeaving ? ' onboarding__event-note--leaving' : ''}`}>
+                {GUIDE_TEXT.eventNote}
+              </p>
             </>
           )}
 
-          {step === STEP.MODE_INTRO && <ModeIntro onStart={() => setStep(STEP.PRACTICE)} />}
+          {step === STEP.MODE_INTRO && (
+            <ModeIntro isLeaving={isLeaving} onStart={() => advanceStep(() => setStep(STEP.PRACTICE))} />
+          )}
 
-          {step === STEP.PRACTICE && <ExampleQuestion onAdvance={() => setStep(STEP.COUNTDOWN)} />}
+          {step === STEP.PRACTICE && (
+            <ExampleQuestion isLeaving={isLeaving} onAdvance={() => advanceStep(() => setStep(STEP.COUNTDOWN))} />
+          )}
 
-          {step === STEP.COUNTDOWN && <Countdown onDone={() => navigate('/game')} />}
+          {step === STEP.COUNTDOWN && (
+            <Countdown isLeaving={isLeaving} onDone={() => advanceStep(() => navigate('/game'))} />
+          )}
         </div>
       </div>
     </div>
