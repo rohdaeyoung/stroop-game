@@ -27,9 +27,9 @@ function ModeCard({ badgeClassName, badgeLabel, question, correctColor, wrongCol
   )
 }
 
-export default function ModeIntro({ onStart }) {
+export default function ModeIntro({ isLeaving, onStart }) {
   return (
-    <div className="onboarding__mode-intro">
+    <div className={`onboarding__mode-intro${isLeaving ? ' onboarding__mode-intro--leaving' : ''}`}>
       <h1 className="onboarding__title onboarding__display">{GUIDE_TEXT.modeIntroTitle}</h1>
       <p className="onboarding__desc">{GUIDE_TEXT.modeIntroDesc}</p>
 

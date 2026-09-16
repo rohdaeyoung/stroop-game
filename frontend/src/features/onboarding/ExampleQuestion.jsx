@@ -1,6 +1,6 @@
 // 👤 담당: 최복순
 // 할 일: "이런 문제가 나와요" 예시를 직접 눌러보게 하기 (연습용, 점수 없음)
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { STROOP_COLORS } from '../../shared/constants/colors.js'
 import { GUIDE_TEXT } from './guideText.js'
 import { CORRECT_TITLE_SPANS } from './colorizeText.js'
@@ -20,7 +20,57 @@ const CHOICE_SHADOW = {
   green: 'rgba(46, 199, 112, 0.35)',
 }
 
-export default function ExampleQuestion({ onAdvance }) {
+const CONFETTI_COLORS = ['#ff4759', '#3b7afa', '#ffc93d', '#2ec770', '#ff2e78', '#ffffff']
+const CONFETTI_COUNT = 24
+
+// 정답을 맞혔을 때 한 번 터지는 폭죽 조각들 — 매 렌더마다 다시 흩어지지 않도록
+// useMemo 로 각도/거리/색을 한 번만 뽑습니다.
+function Confetti() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: CONFETTI_COUNT }, (_, i) => {
+        const angle = (360 / CONFETTI_COUNT) * i + (Math.random() * 18 - 9)
+        const distance = 160 + Math.random() * 220
+        const rad = (angle * Math.PI) / 180
+        return {
+          id: i,
+          dx: Math.cos(rad) * distance,
+          dy: Math.sin(rad) * distance,
+          spin: (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 360),
+          delay: Math.random() * 0.15,
+          duration: 0.7 + Math.random() * 0.4,
+          size: 8 + Math.random() * 8,
+          color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+          rounded: i % 2 === 0,
+        }
+      }),
+    [],
+  )
+
+  return (
+    <div className="onboarding__confetti" aria-hidden="true">
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          className="onboarding__confetti-piece"
+          style={{
+            '--dx': `${p.dx}px`,
+            '--dy': `${p.dy}px`,
+            '--spin': `${p.spin}deg`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            background: p.color,
+            borderRadius: p.rounded ? '50%' : '3px',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+export default function ExampleQuestion({ isLeaving, onAdvance }) {
   const [picked, setPicked] = useState(null)
 
   const isCorrect = picked?.key === INK_COLOR.key
@@ -37,12 +87,14 @@ export default function ExampleQuestion({ onAdvance }) {
 
   return (
     <>
-      <div className="onboarding__banner">
+      <div className={`onboarding__banner${isLeaving ? ' onboarding__banner--leaving' : ''}`}>
         <span className="onboarding__badge onboarding__badge--a">{GUIDE_TEXT.modeALabel}</span>
-        <span className="onboarding__banner-text">{isCorrect ? GUIDE_TEXT.correctBanner : GUIDE_TEXT.practiceBanner}</span>
+        <span className="onboarding__banner-text">{GUIDE_TEXT.practiceBanner}</span>
       </div>
 
-      <div className="onboarding__example">
+      <div className={`onboarding__example${isLeaving ? ' onboarding__example--leaving' : ''}`}>
+        {isCorrect && <Confetti />}
+
         {isCorrect ? (
           <h1 className="onboarding__title onboarding__display">
             {CORRECT_TITLE_SPANS.map(({ text, color }, i) => (

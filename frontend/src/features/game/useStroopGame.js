@@ -25,6 +25,12 @@ export function useStroopGame({ onGameOver }) {
   const [correctCount, setCorrectCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
 
+  // 화면에 잠깐 떴다 사라지는 콤보/스피드/오답 배지용 — seq 는 같은 콤보 수가
+  // 반복되더라도 화면 쪽에서 다시 팝업 애니메이션을 재생시키기 위한 값입니다.
+  const [lastGain, setLastGain] = useState(null) // { combo, speedBonus, seq }
+  const [lastMiss, setLastMiss] = useState(null) // { penalty, seq }
+  const badgeSeqRef = useRef(0)
+
   const difficulty = getDifficulty(correctCount)
   const [quiz, setQuiz] = useState(() => createQuiz(difficulty.choiceCount))
   const [timeLeft, setTimeLeft] = useState(difficulty.limitMs)
@@ -143,10 +149,12 @@ export function useStroopGame({ onGameOver }) {
     const isCorrect = choiceKey === answerKey
 
     if (isCorrect) {
+      const remainMs = difficulty.limitMs - elapsed
       const gained = calcScore({
         combo: comboRef.current,
-        remainMs: difficulty.limitMs - elapsed,
+        remainMs,
       })
+      const speedBonus = Math.round(Math.max(0, remainMs) / 10)
       const nextScore = scoreRef.current + gained
       const nextCombo = comboRef.current + 1
       const nextCorrectCount = correctCountRef.current + 1
@@ -161,6 +169,8 @@ export function useStroopGame({ onGameOver }) {
       setCombo(nextCombo)
       setMaxCombo(nextMaxCombo)
       setCorrectCount(nextCorrectCount)
+      badgeSeqRef.current += 1
+      setLastGain({ combo: nextCombo, speedBonus, seq: badgeSeqRef.current })
       nextQuestion(nextCorrectCount)
     } else {
       const next = applyMiss({
@@ -171,6 +181,7 @@ export function useStroopGame({ onGameOver }) {
       })
       const nextScore = next.score
       const nextWrongCount = next.wrongCount
+      const penalty = scoreRef.current - nextScore
 
       scoreRef.current = nextScore
       comboRef.current = 0
@@ -181,6 +192,8 @@ export function useStroopGame({ onGameOver }) {
       setCombo(0)
       setWrongCount(nextWrongCount)
       setLives(next.lives)
+      badgeSeqRef.current += 1
+      setLastMiss({ penalty, seq: badgeSeqRef.current })
 
       if (next.isGameOver) {
         endGame({
@@ -227,6 +240,7 @@ export function useStroopGame({ onGameOver }) {
 
   return {
     score, combo, lives, quiz, answer,
+    lastGain, lastMiss,
     timeRatio: Math.max(0, timeLeft / difficulty.limitMs),
     questionText:
       quiz.mode === MODE.COLOR ? '글자의 색을 고르세요' : '단어의 뜻을 고르세요',
