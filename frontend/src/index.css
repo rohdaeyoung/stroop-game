@@ -1,4 +1,9 @@
-/* ⚠️ [공용] 전역 리셋만. 각자 스타일은 자기 폴더의 CSS 파일에 작성하세요. */
+/* ⚠️ [공용] 전역 리셋과 폰트 로드. 각자 스타일은 자기 폴더의 CSS 파일에 작성하세요. */
+
+/* Figma 시안 폰트. 여기서 한 번만 불러오고 각 화면은 토큰을 씁니다.
+   예전에는 onboarding/ result/ ranking/ 이 각자 @import 해서 같은 폰트를 세 번 요청했고,
+   정작 게임 화면에는 Black Han Sans 가 적용되지 않았습니다. */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 * { box-sizing: border-box; }
 
 html, body, #root {

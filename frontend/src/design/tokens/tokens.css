@@ -25,7 +25,12 @@
   --stroop-yellow: #ffc93d;
 
   /* ── 타이포 */
-  --font-base: 'Pretendard', -apple-system, system-ui, sans-serif;
+  /* Figma 시안 폰트 (index.css 에서 로드)
+     display: 점수·큰 제목·배지 등 임팩트가 필요한 곳
+     base   : 본문·버튼·라벨
+     Pretendard 는 파일도 웹폰트 로드도 없어 항상 시스템 폰트로 대체되고 있었습니다. */
+  --font-display: 'Black Han Sans', 'Noto Sans KR', -apple-system, sans-serif;
+  --font-base: 'Noto Sans KR', -apple-system, system-ui, sans-serif;
   --font-size-sm: 14px;
   --font-size-md: 18px;
   --font-size-lg: 28px;

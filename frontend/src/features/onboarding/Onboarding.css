@@ -5,7 +5,7 @@
    이 파일 안에서만 쓰는 로컬 변수(--ob-*)로 대응합니다.
    game/result/ranking 과 같은 패턴으로 1920x1080 고정 캔버스를
    useKioskScale 로 화면에 맞게 축소/확대합니다. */
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+/* 폰트는 index.css 에서 전역으로 불러옵니다 */
 
 .onboarding-kiosk {
   position: fixed;
