@@ -2,7 +2,7 @@
    이번 피그마 디자인은 design/tokens/tokens.css(나연님 소유) 팔레트와 완전히 달라서
    토큰을 새로 정의해달라고 요청하기 전까지 이 파일 안에서만 쓰는 로컬 변수로 뒀습니다.
    전역 토큰이 업데이트되면 --rk-* 변수들을 var(--color-...) 로 교체하면 됩니다. */
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+/* 폰트는 index.css 에서 전역으로 불러옵니다 */
 
 .result-kiosk,
 .result-kiosk--empty {
