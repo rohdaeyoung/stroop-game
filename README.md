@@ -206,8 +206,12 @@ curl https://stroop-api.onrender.com/api/health
 | 게임 실행 | **누구나** (팀원 아니어도) | 링크만 |
 | 잠든 백엔드 깨우기 | **누구나** | 링크만 |
 | 코드 고쳐서 반영하기 | **팀원 전원** | GitHub 계정 |
+| DB 기록 조회 · 초기화 | **노대영 · 고은우** | TiDB Cloud 계정 |
 | 서버 로그 보기 · 환경변수 변경 | 노대영 | Render 계정 |
-| DB 기록 조회 · 초기화 | 노대영 | TiDB Cloud 계정 |
+
+고은우(@Gonu19)님은 TiDB Cloud 에 `Organization Member` + `stroop` 인스턴스
+`Instance Manager` 로 초대되어 있습니다. 랭킹 조회와 기록 삭제를 할 수 있고,
+클러스터 자체를 지울 권한은 없습니다.
 
 ### 코드 수정은 이미 전원 가능합니다
 
@@ -223,17 +227,25 @@ Render 계정이 없어도 됩니다. **평소 하던 GitHub 작업 그대로 �
 
 부스 당일 문제가 생겼을 때 다른 사람도 대응할 수 있게 하려면 아래처럼 초대하면 됩니다.
 
+**TiDB Cloud** — 랭킹 기록 조회, 초기화 *(고은우님 초대 완료)*
+1. https://tidbcloud.com → `Organization Settings` → `Users` → `Invite`
+2. 이메일 입력
+3. 권한은 이렇게 줍니다
+
+| 항목 | 값 | 이유 |
+|---|---|---|
+| Organization Access | `Organization Member` | Owner 는 결제·멤버 관리까지 열려 과합니다 |
+| Instance Access | `Instance Manager` + `stroop` | 조회·삭제에 필요한 최소 권한 |
+
+> ⚠️ `Organization Owner` 로 주면 **클러스터를 통째로 지울 수 있습니다.** 랭킹 데이터가 날아가므로 `Member` + `Instance Manager` 조합을 쓰세요.
+
 **Render** — 로그 확인, 환경변수 변경, 수동 재배포
-1. https://dashboard.render.com → 좌측 상단 워크스페이스 이름 클릭
-2. `Settings` → `Members` → `Invite`
-3. 팀원 이메일 입력
+1. https://dashboard.render.com → 좌측 상단 워크스페이스 이름 → `Settings`
+2. `Members` → `Invite` → 이메일 입력
 
-**TiDB Cloud** — 랭킹 기록 조회, 초기화
-1. https://tidbcloud.com → `Organization Settings` → `Users`
-2. `Invite` → 팀원 이메일 입력
-3. 역할은 조회만 필요하면 읽기 권한으로 충분합니다
+> Render 는 아직 `TrashMap` 워크스페이스에 들어 있습니다. 멤버를 초대하면 그 워크스페이스의 다른 서비스도 함께 보입니다. **분리하려면 새 워크스페이스를 만들고 `Transfer Service` 로 옮기면 되는데, 이때 서비스 주소가 바뀔 수 있어 `CORS_ORIGIN` 과 `VITE_API_BASE_URL` 을 다시 잡아야 합니다.** 행사가 끝난 뒤에 하는 편이 안전합니다.
 
-> 두 초대 모두 계정 소유자(노대영)만 보낼 수 있습니다. **부스 전날까지는 최소 한 명 더 초대해두는 것을 권합니다.** 당일 노대영이 자리를 비웠을 때 아무도 손을 못 대는 상황을 막기 위해서입니다.
+초대는 계정 소유자(노대영)만 보낼 수 있습니다.
 
 ---
 
