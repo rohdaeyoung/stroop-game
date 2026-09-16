@@ -12,20 +12,14 @@ function ModeCard({ badgeClassName, badgeLabel, question, correctColor, wrongCol
     <div className="onboarding__mode-card">
       <span className={`onboarding__badge ${badgeClassName}`}>{badgeLabel}</span>
       <p className="onboarding__mode-card-question">{question}</p>
-      <div className="onboarding__mode-card-word" style={{ color: INK_COLOR.css }}>
+      <div className="onboarding__mode-card-word onboarding__display" style={{ color: INK_COLOR.css }}>
         {WORD_COLOR.label}
       </div>
       <div className="onboarding__mode-card-choices">
-        <span
-          className="onboarding__choice onboarding__choice--sm onboarding__choice--highlight"
-          style={{ background: correctColor.css }}
-        >
+        <span className="onboarding__choice onboarding__choice--sm onboarding__choice--highlight-sm" style={{ background: correctColor.css }}>
           {correctColor.label}
         </span>
-        <span
-          className="onboarding__choice onboarding__choice--sm onboarding__choice--muted"
-          style={{ background: wrongColor.css }}
-        >
+        <span className="onboarding__choice onboarding__choice--sm onboarding__choice--muted" style={{ background: wrongColor.css }}>
           {wrongColor.label}
         </span>
       </div>
@@ -36,7 +30,7 @@ function ModeCard({ badgeClassName, badgeLabel, question, correctColor, wrongCol
 export default function ModeIntro({ onStart }) {
   return (
     <div className="onboarding__mode-intro">
-      <h1 className="onboarding__title">{GUIDE_TEXT.modeIntroTitle}</h1>
+      <h1 className="onboarding__title onboarding__display">{GUIDE_TEXT.modeIntroTitle}</h1>
       <p className="onboarding__desc">{GUIDE_TEXT.modeIntroDesc}</p>
 
       <div className="onboarding__mode-cards">

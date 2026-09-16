@@ -28,9 +28,9 @@ export default function Countdown({ onDone }) {
 
       <div
         className="onboarding__countdown-ring"
-        style={{ background: `conic-gradient(var(--onboarding-accent) ${progress * 360}deg, var(--color-surface) 0deg)` }}
+        style={{ '--progress': `${progress * 360}deg` }}
       >
-        <span className="onboarding__countdown-number">{secondsLeft}</span>
+        <span className="onboarding__countdown-number onboarding__display">{secondsLeft}</span>
       </div>
 
       <h1 className="onboarding__title">{GUIDE_TEXT.countdownTitle}</h1>

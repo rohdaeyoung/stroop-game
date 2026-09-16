@@ -1,30 +1,130 @@
-/* 👤 담당: 최복순 — 클래스 접두사 .onboarding 유지 */
-.onboarding {
-  /* 디자인 토큰에 없는 강조 핑크 — 이 파일(온보딩) 안에서만 사용 */
-  --onboarding-accent: #ec1f6b;
+/* 👤 담당: 최복순 — 클래스 접두사 .onboarding 유지
+   Figma Dev Mode 코드 컨텍스트로 실측한 값입니다 (2026-09-16).
+   이번 피그마 팔레트가 design/tokens/tokens.css(나연님 소유) 값과 살짝 달라서
+   (예: 빨강 #ff4759 vs 토큰 --stroop-red #ff5363) 토큰은 건드리지 않고
+   이 파일 안에서만 쓰는 로컬 변수(--ob-*)로 대응합니다.
+   game/result/ranking 과 같은 패턴으로 1920x1080 고정 캔버스를
+   useKioskScale 로 화면에 맞게 축소/확대합니다. */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  position: relative;
+.onboarding-kiosk {
+  position: fixed;
+  inset: 0;
   overflow: hidden;
+  background: #0b0b19;
+  font-family: 'Noto Sans KR', var(--font-base);
 }
 
-/* 온보딩 전 화면 공통 배경 글로우 */
-.onboarding::before {
+.onboarding-kiosk__canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center;
+}
+
+.onboarding {
+  --ob-pink: #ff2e78;
+  --ob-red: #ff4759;
+  --ob-blue: #3b7afa;
+  --ob-yellow: #ffc93d;
+  --ob-green: #2ec770;
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+}
+
+.onboarding__display {
+  font-family: 'Black Han Sans', 'Noto Sans KR', var(--font-base);
+  font-weight: 400;
+}
+
+/* 배경 글로우 — 02/03/04 공통. 시작화면(01)은 --start 변형이 따로 있음
+   blur 값을 크게 주면 overflow:hidden 에 거의 다 잘려서 옆면이 뭉개져 보입니다
+   (features/result/Result.css 에서 이미 겪은 문제라 같은 값(60px)으로 맞췄습니다). */
+.onboarding::before,
+.onboarding::after {
   content: '';
   position: absolute;
-  inset: 0;
-  z-index: 0;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.6;
   pointer-events: none;
+  z-index: 0;
+}
+.onboarding::before {
+  left: -220px;
+  top: -260px;
+  background: radial-gradient(circle, var(--ob-green), transparent 72%);
+}
+.onboarding::after {
+  right: -260px;
+  top: -260px;
+  background: radial-gradient(circle, var(--ob-blue), transparent 72%);
+}
+
+/* 01_대기화면 — 네 귀퉁이 컬러 글로우 */
+.onboarding--start::before {
+  inset: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  opacity: 1;
+  filter: none;
   background:
     radial-gradient(circle at 8% 10%, rgba(255, 59, 48, 0.35), transparent 35%),
     radial-gradient(circle at 92% 8%, rgba(10, 132, 255, 0.35), transparent 35%),
     radial-gradient(circle at 6% 92%, rgba(48, 209, 88, 0.28), transparent 35%),
     radial-gradient(circle at 94% 90%, rgba(255, 214, 10, 0.28), transparent 35%);
+}
+.onboarding--start::after { content: none; }
+
+/* LIKELION SKU 로고 — 모든 온보딩 화면 상단 고정 (Figma: image 1, 세로로 그려진 걸 90deg 회전) */
+.onboarding__brand {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 282px;
+  height: 57px;
+  pointer-events: none;
+}
+.onboarding__brand img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 57px;
+  height: 282px;
+  object-fit: contain;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* 대기화면 중앙의 큰 사자 워터마크 (Figma: 01_대기화면, node 34:3) */
+.onboarding__watermark {
+  position: absolute;
+  left: 582px;
+  top: 169px;
+  width: 756px;
+  height: 670px;
+  object-fit: cover;
+  opacity: 0.2;
+  filter: blur(5.3px);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .onboarding__start {
@@ -33,399 +133,418 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  text-align: center;
-}
-
-.onboarding__mascot {
-  width: min(55%, 200px);
-  height: auto;
-  margin: 0 auto;
-  filter: drop-shadow(0 0 28px rgba(10, 132, 255, 0.55));
-}
-
-.onboarding__brand {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: var(--stroop-blue);
+  gap: 32px;
+  width: 935px;
 }
 
 .onboarding__title.onboarding__title--stroop {
-  margin-top: calc(var(--space-3) * -1);
-  font-size: var(--font-size-xl);
-  font-weight: 900;
+  font-size: 132px;
   line-height: 1.15;
-  text-shadow: 0 0 18px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 28px rgba(255, 255, 255, 0.65),
+    0 0 35px #3873ec;
+}
+
+.onboarding__tagline {
+  font-size: 38px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
 }
 
 .onboarding__start-cta {
-  margin-top: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  padding: 30px 64px;
   border: none;
-  border-radius: var(--radius-full);
-  background: var(--onboarding-accent);
-  color: var(--color-text);
-  font-family: var(--font-base);
-  font-size: var(--font-size-md);
+  border-radius: 999px;
+  background: var(--ob-pink);
+  color: #fff;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-size: 40px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 24px rgba(236, 31, 107, 0.55);
+  box-shadow: 0 8px 46px 2px rgba(255, 46, 120, 0.5);
   transition: transform 0.1s ease;
 }
 
 .onboarding__start-cta:active { transform: scale(0.96); }
 
-.onboarding__event-note {
+.onboarding__meta {
+  font-size: 26px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
   margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
-  opacity: 0.7;
 }
 
 .onboarding__ranking-link {
-  margin-top: var(--space-2);
+  margin: 0;
   background: transparent;
   border: none;
-  color: var(--color-text-dim);
-  font-family: var(--font-base);
-  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-size: 20px;
   text-decoration: underline;
   cursor: pointer;
 }
 
-.onboarding__title {
-  font-size: var(--font-size-lg);
-  text-align: center;
+.onboarding__event-note {
+  position: absolute;
+  left: 50%;
+  top: 1010px;
+  transform: translateX(-50%);
+  z-index: 1;
   margin: 0;
+  width: max-content;
+  font-size: 24px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.onboarding__tagline {
-  font-size: var(--font-size-md);
-  color: var(--color-text-dim);
-  text-align: center;
-  margin: 0;
-}
-
-.onboarding__desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
-  text-align: center;
-  white-space: pre-line;
-  margin: 0;
-}
-
-.onboarding__meta {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
-  text-align: center;
-  margin: 0;
-}
-
-/* 상단 배지 / 배너 (모드 표시) */
+/* 상단 배지 / 배너 (모드 표시) — 03/03b/03c/04 공통 전체 폭 띠 */
 .onboarding__badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: 900;
-  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
   white-space: nowrap;
 }
 
-.onboarding__badge--a { background: var(--stroop-blue); }
-.onboarding__badge--b { background: var(--onboarding-accent); }
+.onboarding__badge--a { background: var(--ob-blue); }
+.onboarding__badge--b { background: var(--ob-pink); }
 
 .onboarding__banner {
-  position: relative;
+  position: absolute;
+  left: 0;
+  top: 0;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
-  padding: var(--space-2) var(--space-4);
-  background: rgba(255, 255, 255, 0.04);
-  transition: background 0.2s ease;
+  gap: 16px;
+  width: 100%;
+  height: 90px;
+  padding: 0 40px;
+  background: rgba(59, 122, 250, 0.16);
 }
 
 .onboarding__banner-text {
-  font-size: var(--font-size-sm);
+  font-size: 32px;
   font-weight: 700;
 }
 
-.onboarding__banner--wrong { background: rgba(255, 59, 48, 0.18); }
-.onboarding__banner--correct { background: rgba(46, 204, 113, 0.18); }
-
-/* 모드 설명 화면 */
+/* 모드 설명 화면 (02) — Figma 실측 절대좌표 (캔버스 1920x1080 기준, 배너 없음) */
 .onboarding__mode-intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
 }
 
+.onboarding__mode-intro .onboarding__title {
+  position: absolute;
+  top: 151px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 64px;
+  width: 1000px;
+}
+
+.onboarding__desc {
+  font-size: 30px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.76);
+  margin: 0;
+}
+
+.onboarding__mode-intro .onboarding__desc {
+  position: absolute;
+  top: 250px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+}
+
 .onboarding__mode-cards {
+  position: absolute;
+  top: 363px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  width: 100%;
+  gap: 32px;
+}
+
+.onboarding__mode-intro .onboarding__start-cta {
+  position: absolute;
+  top: 886px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .onboarding__mode-card {
-  flex: 1;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
+  position: relative;
+  width: 415px;
+  height: 453px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 32px;
+}
+
+.onboarding__mode-card .onboarding__badge {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .onboarding__mode-card-question {
-  font-size: var(--font-size-sm);
+  position: absolute;
+  top: 121px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  font-size: 28px;
+  font-weight: 700;
   margin: 0;
 }
 
 .onboarding__mode-card-word {
-  font-size: var(--font-size-lg);
-  font-weight: 900;
+  position: absolute;
+  top: 187px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 70px;
 }
 
 .onboarding__mode-card-choices {
+  position: absolute;
+  top: 314px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: var(--space-2);
+  gap: 14px;
 }
 
-/* 예시 문제 카드 */
+/* 예시 문제 카드 (03/03b/03c) — Figma 실측 절대좌표 (배너 높이 90px 아래 기준) */
 .onboarding__example {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
-.onboarding__example-word { font-size: var(--font-size-xl); font-weight: 900; }
-.onboarding__example-hint { font-size: var(--font-size-sm); color: var(--color-text-dim); margin: 0; }
+.onboarding__example .onboarding__title {
+  position: absolute;
+  top: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 64px;
+  width: 1000px;
+}
+
+.onboarding__example .onboarding__desc {
+  position: absolute;
+  top: 258px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.onboarding__example-word-card {
+  position: absolute;
+  top: 355px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 583px;
+  height: 365px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 40px;
+}
+
+.onboarding__example-word {
+  font-size: 180px;
+}
+
+.onboarding__example-hint {
+  position: absolute;
+  top: 967px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
 
 .onboarding__example-choices {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-2);
+  position: absolute;
+  top: 789px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 28px;
+}
+
+.onboarding__example .onboarding__example-link {
+  position: absolute;
+  top: 967px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
 }
 
 .onboarding__choice {
   position: relative;
   overflow: visible;
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  font-family: var(--font-base);
-  font-size: var(--font-size-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 217px;
+  border: none;
+  border-radius: 28px;
+  padding: 40px 20px;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-size: 38px;
   font-weight: 700;
-  color: var(--color-text);
+  color: #fff;
   cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.2s ease;
+  box-shadow: 0 6px 24px var(--choice-shadow, transparent);
+  transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .onboarding__choice-badge {
   position: absolute;
-  top: -14px;
-  right: -10px;
-  width: 34px;
-  height: 34px;
+  top: -22px;
+  left: -26px;
+  width: 84px;
+  height: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .onboarding__choice--sm {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-sm);
+  width: 120px;
+  padding: 0;
+  height: 76px;
+  border-radius: 18px;
+  font-size: 26px;
 }
 
 .onboarding__choice:active { transform: scale(0.96); }
 .onboarding__choice:disabled { cursor: default; }
+
+/* mini_btn (모드 카드 안) 오답 예시 — 흐리게 */
 .onboarding__choice--muted { opacity: 0.45; }
-.onboarding__choice--wrong { border-color: var(--color-danger); }
+/* 예시 문제 카드의 선택 안 된 나머지 — 조금 덜 흐리게 (피그마 실측 0.55) */
+.onboarding__choice--dim { opacity: 0.55; }
+
+.onboarding__choice--wrong { border: 5px solid #ed0606; }
+
+/* mini_btn 정답 표시 — 흰 테두리 + 흰 글로우 */
+.onboarding__choice--highlight-sm {
+  border: 3px solid #fff;
+  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* 예시 문제 카드의 정답 버튼 — 초록 테두리 + 파란 글로우 (피그마 고정값) */
 .onboarding__choice--highlight {
-  border-color: var(--color-text);
-  box-shadow: 0 0 0 3px rgba(245, 245, 247, 0.25);
+  border: 6px solid var(--ob-green);
+  box-shadow: 0 8px 56px rgba(3, 67, 196, 0.6);
 }
 
 .onboarding__example-link {
-  align-self: center;
-  margin-top: var(--space-1);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: transparent;
   border: none;
-  color: var(--color-text-dim);
-  font-family: var(--font-base);
-  font-size: var(--font-size-sm);
-  text-decoration: underline;
+  color: #fff;
+  font-family: 'Noto Sans KR', var(--font-base);
+  font-size: 32px;
+  font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.onboarding__example-link--primary {
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-}
-
-/* 카운트다운 */
+/* 카운트다운 (04) — Figma 실측 절대좌표 */
 .onboarding__countdown {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
 }
 
 .onboarding__countdown-ring {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: var(--radius-full);
+  position: absolute;
+  top: 304px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: conic-gradient(var(--ob-pink) var(--progress, 0deg), #24243a 0deg);
   transition: background 0.9s linear;
 }
 
 .onboarding__countdown-ring::before {
   content: '';
   position: absolute;
-  width: 100px;
-  height: 100px;
-  border-radius: var(--radius-full);
-  background: var(--color-bg);
+  width: 356px;
+  height: 356px;
+  border-radius: 50%;
+  background: #0b0b19;
 }
 
 .onboarding__countdown-number {
   position: relative;
-  font-size: var(--font-size-xl);
-  font-weight: 900;
-  color: var(--color-text);
+  font-size: 180px;
+  color: #fff;
 }
 
-/* ===== 태블릿 · 키오스크 레이아웃 =====
-   index.css 의 .app-shell 폭 제한은 통합 시점에 제거되어 화면 전체를 씁니다.
-   (원래 여기서 :has() 로 우회하던 max-width 지정은 더 이상 필요 없어 걷어냈습니다)
-   폰트 토큰은 .onboarding 스코프 안에서만 재정의합니다.
-
-   세로(태블릿을 세워서 씀)와 가로(Figma 원본 PDF 는 1920x1080 랜드스케이프,
-   PRD 의 "터치 우선 (태블릿)" 기준) 둘 다 지원합니다:
-   - 이 블록: 768px 이상 공통 + 세로일 때 기준값 (화면이 넉넉히 높음)
-   - 아래 orientation: landscape 블록: 가로일 때 (화면 높이가 짧으므로 크기를 줄임) */
-@media (min-width: 768px) {
-  .onboarding {
-    --font-size-sm: 16px;
-    --font-size-md: 22px;
-    --font-size-lg: 34px;
-    --font-size-xl: 80px;
-    gap: var(--space-5);
-    padding: var(--space-5);
-  }
-
-  .onboarding__mascot {
-    width: min(50%, 380px);
-  }
-
-  .onboarding__start-cta {
-    padding: var(--space-4) var(--space-5);
-  }
-
-  .onboarding__banner {
-    margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0;
-    padding: var(--space-3) var(--space-5);
-  }
-
-  .onboarding__mode-cards {
-    flex-direction: row;
-  }
-
-  .onboarding__example {
-    padding: var(--space-5);
-    gap: var(--space-3);
-  }
-
-  .onboarding__example-choices {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
-  }
-
-  .onboarding__choice {
-    padding: var(--space-4);
-  }
-
-  .onboarding__countdown-ring {
-    width: 180px;
-    height: 180px;
-  }
-
-  .onboarding__countdown-ring::before {
-    width: 150px;
-    height: 150px;
-  }
+.onboarding__countdown .onboarding__title {
+  position: absolute;
+  top: 761px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: max-content;
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-/* 가로(랜드스케이프) 태블릿 — PDF 원본과 같은 방향.
-   세로 버전보다 화면 높이가 짧으므로 폭은 더 넓게, 세로 간격/글자 크기는 줄여서
-   스크롤 없이 한 화면에 들어오게 합니다. */
-@media (min-width: 768px) and (orientation: landscape) {
-  .onboarding {
-    --font-size-sm: 15px;
-    --font-size-md: 20px;
-    --font-size-lg: 30px;
-    --font-size-xl: 56px;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    overflow-y: auto;
-  }
+.onboarding__countdown .onboarding__desc {
+  position: absolute;
+  top: 836px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  font-size: 25px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+}
 
-  .onboarding__start {
-    gap: var(--space-2);
-  }
-
-  .onboarding__mascot {
-    width: min(28%, 160px);
-  }
-
-  .onboarding__title.onboarding__title--stroop {
-    margin-top: calc(var(--space-2) * -1);
-  }
-
-  .onboarding__banner {
-    padding: var(--space-2) var(--space-4);
-  }
-
-  .onboarding__mode-cards {
-    gap: var(--space-4);
-  }
-
-  .onboarding__example {
-    padding: var(--space-4);
-    gap: var(--space-2);
-  }
-
-  .onboarding__choice {
-    padding: var(--space-3);
-  }
-
-  .onboarding__countdown-ring {
-    width: 140px;
-    height: 140px;
-  }
-
-  .onboarding__countdown-ring::before {
-    width: 116px;
-    height: 116px;
-  }
+.onboarding__title {
+  font-size: 64px;
+  text-align: center;
+  margin: 0;
 }
