@@ -35,12 +35,6 @@ const FRAME_OPTIONS = [
 
 const COUNTDOWN_SECONDS = 3
 
-function todayLabel() {
-  const d = new Date()
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`
-}
-
 async function openCamera() {
   return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
 }
@@ -199,7 +193,6 @@ export default function CameraStep({ onNext, onSkip }) {
           alt=""
           aria-hidden="true"
         />
-        <p className="camera__date">{todayLabel()}</p>
       </div>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

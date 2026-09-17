@@ -22,12 +22,9 @@ test('approved replacement images are used as camera frames', () => {
   }
 })
 
-test('replacement frames clip the camera to their transparent windows', () => {
-  const denimRule = rankingCss.match(/\.camera__polaroid--denim\s*\{[^}]+\}/s)?.[0] ?? ''
-  const stampRule = rankingCss.match(/\.camera__polaroid--stamp\s*\{[^}]+\}/s)?.[0] ?? ''
-
-  assert.match(denimRule, /--camera-window:\s*inset\(16% 13% 12% 13%\)/)
-  assert.match(stampRule, /--camera-window:\s*inset\(14% 10% 25% 10%\)/)
+test('all replacement frames share one full-bleed camera canvas', () => {
+  assert.doesNotMatch(rankingCss, /--camera-window/)
+  assert.doesNotMatch(rankingCss, /clip-path/)
 })
 
 test('네 프레임 모두 Figma 원본 에셋을 사용한다', () => {
@@ -48,25 +45,26 @@ test('프레임 선택 썸네일은 교체된 프레임 이미지를 그대로 �
   assert.match(cameraSource, /src=\{FRAME_PREVIEWS\[opt\.key\]\}/)
 })
 
-test('카메라 영상은 프레임 캔버스 안에서 잘린다', () => {
+test('카메라 영상은 공통 프레임 캔버스를 빈틈없이 채운다', () => {
   const polaroidRule = rankingCss.match(/\.camera__polaroid\s*\{[^}]+\}/s)?.[0] ?? ''
   assert.match(polaroidRule, /padding:\s*0/)
   assert.match(polaroidRule, /overflow:\s*hidden/)
   assert.match(polaroidRule, /width:\s*var\(--camera-frame-width\)/)
   assert.match(polaroidRule, /height:\s*var\(--camera-frame-height\)/)
-  assert.match(polaroidRule, /--camera-window:\s*inset\(9% 8% 15% 8%\)/)
   assert.match(polaroidRule, /background:\s*transparent/)
 
   const mediaRule = rankingCss.match(/\.camera__video,[\s\S]*?\.camera__error-box\s*\{[^}]+\}/)?.[0] ?? ''
-  assert.match(mediaRule, /clip-path:\s*var\(--camera-window\)/)
+  assert.match(mediaRule, /inset:\s*0/)
+  assert.match(mediaRule, /width:\s*100%/)
+  assert.match(mediaRule, /height:\s*100%/)
+  assert.match(mediaRule, /object-fit:\s*cover/)
+  assert.doesNotMatch(mediaRule, /clip-path/)
 })
 
-test('날짜는 프레임 바깥으로 튀어나오지 않고 하단 안쪽에 표시된다', () => {
-  const dateRule = rankingCss.match(/\.camera__date\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(dateRule, /position:\s*absolute/)
-  assert.match(dateRule, /left:\s*40px/)
-  assert.match(dateRule, /bottom:\s*20px/)
-  assert.match(dateRule, /margin:\s*0/)
+test('프레임에 날짜를 표시하지 않는다', () => {
+  assert.doesNotMatch(cameraSource, /camera__date/)
+  assert.doesNotMatch(cameraSource, /todayLabel/)
+  assert.doesNotMatch(rankingCss, /\.camera__date/)
 })
 
 test('우표 프레임도 4대3 캔버스에서 회전 없이 표시한다', () => {
