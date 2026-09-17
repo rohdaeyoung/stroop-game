@@ -6,6 +6,7 @@
 .idea/
 .vscode/
 *.iml
+.worktrees/
 
 # ── Frontend
 node_modules/
