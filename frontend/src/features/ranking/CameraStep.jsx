@@ -9,10 +9,7 @@ import cameraFrameBasic from './assets/camera-frame-basic.png'
 import cameraFrameDots from './assets/camera-frame-dots.png'
 import cameraFrameDenim from './assets/camera-frame-denim.png'
 import cameraFrameStamp from './assets/camera-frame-stamp.png'
-import cameraPreviewBasic from './assets/camera-preview-basic.svg'
 import cameraPreviewDots from './assets/camera-preview-dots.svg'
-import cameraPreviewDenim from './assets/camera-preview-denim.png'
-import cameraPreviewStamp from './assets/camera-preview-stamp.svg'
 import shutterArrows from './assets/shutter-arrows.png'
 
 const FRAME_ASSETS = {
@@ -23,10 +20,10 @@ const FRAME_ASSETS = {
 }
 
 const FRAME_PREVIEWS = {
-  basic: cameraPreviewBasic,
+  basic: cameraFrameBasic,
   dots: cameraPreviewDots,
-  denim: cameraPreviewDenim,
-  stamp: cameraPreviewStamp,
+  denim: cameraFrameDenim,
+  stamp: cameraFrameStamp,
 }
 
 const FRAME_OPTIONS = [

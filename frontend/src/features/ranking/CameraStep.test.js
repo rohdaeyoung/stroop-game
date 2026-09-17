@@ -1,9 +1,34 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const cameraSource = readFileSync(new URL('./CameraStep.jsx', import.meta.url), 'utf8')
 const rankingCss = readFileSync(new URL('./Ranking.css', import.meta.url), 'utf8')
+
+const replacementFrameHashes = {
+  basic: '1f986b9160a5b7fcc1dc50d5531ce7487179273accad2b135e7a703c518898ed',
+  denim: 'a008b0a808d6a672f163221aaf73f87d2887f9cc49901aacd6a5ad07bf187739',
+  stamp: '78a91ba8a147b482700ef0296d215d7f574f679b1c8a9a37e0250bbf53c70249',
+}
+
+const framePreviews = cameraSource.match(/const FRAME_PREVIEWS = \{[^}]+\}/s)?.[0] ?? ''
+
+test('approved replacement images are used as camera frames', () => {
+  for (const [frame, expectedHash] of Object.entries(replacementFrameHashes)) {
+    const asset = readFileSync(new URL(`./assets/camera-frame-${frame}.png`, import.meta.url))
+    const actualHash = createHash('sha256').update(asset).digest('hex')
+    assert.equal(actualHash, expectedHash)
+  }
+})
+
+test('replacement frames clip the camera to their transparent windows', () => {
+  const denimRule = rankingCss.match(/\.camera__polaroid--denim\s*\{[^}]+\}/s)?.[0] ?? ''
+  const stampRule = rankingCss.match(/\.camera__polaroid--stamp\s*\{[^}]+\}/s)?.[0] ?? ''
+
+  assert.match(denimRule, /--camera-window:\s*inset\(16% 13% 12% 13%\)/)
+  assert.match(stampRule, /--camera-window:\s*inset\(14% 10% 25% 10%\)/)
+})
 
 test('네 프레임 모두 Figma 원본 에셋을 사용한다', () => {
   for (const asset of ['basic', 'dots', 'denim', 'stamp']) {
@@ -14,11 +39,12 @@ test('네 프레임 모두 Figma 원본 에셋을 사용한다', () => {
   assert.match(cameraSource, /src=\{FRAME_ASSETS\[frame\]\}/)
 })
 
-test('프레임 선택 썸네일도 Figma 전용 미리보기 에셋을 사용한다', () => {
-  for (const asset of ['basic', 'dots', 'denim', 'stamp']) {
-    assert.match(cameraSource, new RegExp(`camera-preview-${asset}`))
-    assert.match(cameraSource, new RegExp(`${asset}:\\s*cameraPreview`, 'm'))
-  }
+test('프레임 선택 썸네일은 교체된 프레임 이미지를 그대로 보여준다', () => {
+  assert.match(cameraSource, /camera-preview-dots/)
+  assert.match(framePreviews, /dots:\s*cameraPreviewDots/)
+  assert.match(framePreviews, /basic:\s*cameraFrameBasic/)
+  assert.match(framePreviews, /denim:\s*cameraFrameDenim/)
+  assert.match(framePreviews, /stamp:\s*cameraFrameStamp/)
   assert.match(cameraSource, /src=\{FRAME_PREVIEWS\[opt\.key\]\}/)
 })
 
