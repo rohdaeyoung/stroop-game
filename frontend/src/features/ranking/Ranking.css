@@ -391,6 +391,7 @@
 .camera__polaroid {
   --camera-frame-width: 889px;
   --camera-frame-height: 667px;
+  --camera-window: inset(11.5% 9.3% 16.4% 8.6%);
   position: relative;
   width: var(--camera-frame-width);
   height: var(--camera-frame-height);
@@ -400,6 +401,15 @@
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.24s;
+}
+.camera__polaroid--dots {
+  --camera-window: inset(9% 9% 18.7% 5.7%);
+}
+.camera__polaroid--denim {
+  --camera-window: inset(15.9% 13% 11.9% 13%);
+}
+.camera__polaroid--stamp {
+  --camera-window: inset(14.3% 10.3% 25.6% 10.3%);
 }
 
 .camera__video,
@@ -413,6 +423,7 @@
   height: 100%;
   object-fit: cover;
   background: #111;
+  clip-path: var(--camera-window);
 }
 .camera__error-box {
   display: flex;

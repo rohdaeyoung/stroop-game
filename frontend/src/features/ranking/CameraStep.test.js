@@ -22,9 +22,21 @@ test('approved replacement images are used as camera frames', () => {
   }
 })
 
-test('all replacement frames share one full-bleed camera canvas', () => {
-  assert.doesNotMatch(rankingCss, /--camera-window/)
-  assert.doesNotMatch(rankingCss, /clip-path/)
+test('each frame clips the camera to its measured transparent window', () => {
+  const expectedWindows = {
+    basic: 'inset(11.5% 9.3% 16.4% 8.6%)',
+    dots: 'inset(9% 9% 18.7% 5.7%)',
+    denim: 'inset(15.9% 13% 11.9% 13%)',
+    stamp: 'inset(14.3% 10.3% 25.6% 10.3%)',
+  }
+
+  const baseRule = rankingCss.match(/\.camera__polaroid\s*\{[^}]+\}/s)?.[0] ?? ''
+  assert.match(baseRule, new RegExp(`--camera-window:\\s*${expectedWindows.basic.replace(/[().%]/g, '\\$&')}`))
+
+  for (const frame of ['dots', 'denim', 'stamp']) {
+    const rule = rankingCss.match(new RegExp(`\\.camera__polaroid--${frame}\\s*\\{[^}]+\\}`, 's'))?.[0] ?? ''
+    assert.match(rule, new RegExp(`--camera-window:\\s*${expectedWindows[frame].replace(/[().%]/g, '\\$&')}`))
+  }
 })
 
 test('네 프레임 모두 Figma 원본 에셋을 사용한다', () => {
@@ -58,7 +70,7 @@ test('카메라 영상은 공통 프레임 캔버스를 빈틈없이 채운다',
   assert.match(mediaRule, /width:\s*100%/)
   assert.match(mediaRule, /height:\s*100%/)
   assert.match(mediaRule, /object-fit:\s*cover/)
-  assert.doesNotMatch(mediaRule, /clip-path/)
+  assert.match(mediaRule, /clip-path:\s*var\(--camera-window\)/)
 })
 
 test('프레임에 날짜를 표시하지 않는다', () => {
