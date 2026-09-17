@@ -5,7 +5,29 @@
 // ⚠️ 카메라 접근은 브라우저 보안 정책상 HTTPS 또는 localhost 에서만 동작해요.
 //    같은 와이파이 IP(http://192.168.x.x:5173)로 열면 카메라 권한 자체가 안 뜰 수 있어요.
 import { useEffect, useRef, useState } from 'react'
+import cameraFrameBasic from './assets/camera-frame-basic.png'
+import cameraFrameDots from './assets/camera-frame-dots.png'
+import cameraFrameDenim from './assets/camera-frame-denim.png'
+import cameraFrameStamp from './assets/camera-frame-stamp.png'
+import cameraPreviewBasic from './assets/camera-preview-basic.svg'
+import cameraPreviewDots from './assets/camera-preview-dots.svg'
+import cameraPreviewDenim from './assets/camera-preview-denim.png'
+import cameraPreviewStamp from './assets/camera-preview-stamp.svg'
 import shutterArrows from './assets/shutter-arrows.png'
+
+const FRAME_ASSETS = {
+  basic: cameraFrameBasic,
+  dots: cameraFrameDots,
+  denim: cameraFrameDenim,
+  stamp: cameraFrameStamp,
+}
+
+const FRAME_PREVIEWS = {
+  basic: cameraPreviewBasic,
+  dots: cameraPreviewDots,
+  denim: cameraPreviewDenim,
+  stamp: cameraPreviewStamp,
+}
 
 const FRAME_OPTIONS = [
   { key: 'basic', label: '기본 프레임' },
@@ -138,7 +160,9 @@ export default function CameraStep({ onNext, onSkip }) {
             className={`camera__frame-option${frame === opt.key ? ' camera__frame-option--selected' : ''}`}
             onClick={() => setFrame(opt.key)}
           >
-            <span className={`camera__frame-preview camera__frame-preview--${opt.key}`} />
+            <span className={`camera__frame-preview camera__frame-preview--${opt.key}`}>
+              <img src={FRAME_PREVIEWS[opt.key]} alt="" aria-hidden="true" />
+            </span>
             <span>{opt.label}</span>
             {frame === opt.key && (
               <span className="camera__frame-check" aria-hidden="true">✓</span>
@@ -172,6 +196,12 @@ export default function CameraStep({ onNext, onSkip }) {
           <video className="camera__video" ref={videoRef} muted playsInline />
         )}
         {phase === 'countdown' && <div className="camera__countdown">{count}</div>}
+        <img
+          className="camera__frame-overlay"
+          src={FRAME_ASSETS[frame]}
+          alt=""
+          aria-hidden="true"
+        />
         <p className="camera__date">{todayLabel()}</p>
       </div>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -185,23 +215,24 @@ export default function CameraStep({ onNext, onSkip }) {
         aria-label="촬영 시작"
       />
 
-      <div className="camera__actions">
-        {phase === 'captured' ? (
-          <>
-            <button type="button" className="camera__cta camera__cta--ghost" onClick={retake}>
-              다시 찍기
-            </button>
-            <button type="button" className="camera__cta" onClick={() => onNext(photo)}>
-              다음 <span aria-hidden="true">→</span>
-            </button>
-          </>
-        ) : (
-          <button type="button" className="camera__cta camera__cta--ghost" onClick={onSkip}>
-            {phase === 'error' ? '건너뛰기' : '촬영 건너뛰기'}
+      {phase === 'captured' && (
+        <div className="camera__actions">
+          <button type="button" className="camera__cta camera__cta--ghost" onClick={retake}>
+            다시 찍기
           </button>
-        )}
-      </div>
-      <p className="camera__hint">촬영한 사진은 이 화면에서만 보여요 (서버에 저장되지 않아요)</p>
+          <button type="button" className="camera__cta" onClick={() => onNext(photo)}>
+            다음 <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      )}
+      {phase === 'error' && (
+        <div className="camera__actions">
+          <button type="button" className="camera__cta camera__cta--ghost" onClick={onSkip}>
+            건너뛰기
+          </button>
+        </div>
+      )}
+      <p className="camera__hint">촬영한 사진은 결과 화면과 함께 저장돼요</p>
     </div>
   )
 }
