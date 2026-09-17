@@ -9,6 +9,10 @@ import cameraFrameBasic from './assets/camera-frame-basic.png'
 import cameraFrameDots from './assets/camera-frame-dots.png'
 import cameraFrameDenim from './assets/camera-frame-denim.png'
 import cameraFrameStamp from './assets/camera-frame-stamp.png'
+import cameraMaskBasic from './assets/camera-mask-basic.png'
+import cameraMaskDots from './assets/camera-mask-dots.png'
+import cameraMaskDenim from './assets/camera-mask-denim.png'
+import cameraMaskStamp from './assets/camera-mask-stamp.png'
 import cameraPreviewDots from './assets/camera-preview-dots.svg'
 import shutterArrows from './assets/shutter-arrows.png'
 
@@ -17,6 +21,13 @@ const FRAME_ASSETS = {
   dots: cameraFrameDots,
   denim: cameraFrameDenim,
   stamp: cameraFrameStamp,
+}
+
+const FRAME_MASKS = {
+  basic: cameraMaskBasic,
+  dots: cameraMaskDots,
+  denim: cameraMaskDenim,
+  stamp: cameraMaskStamp,
 }
 
 const FRAME_PREVIEWS = {
@@ -178,7 +189,10 @@ export default function CameraStep({ onNext, onSkip }) {
         <img className="camera__shutter-arrows" src={shutterArrows} alt="" aria-hidden="true" />
       )}
 
-      <div className={`camera__polaroid camera__polaroid--${frame}`}>
+      <div
+        className={`camera__polaroid camera__polaroid--${frame}`}
+        style={{ '--camera-mask': `url("${FRAME_MASKS[frame]}")` }}
+      >
         {photo ? (
           <img className="camera__photo" src={photo} alt="촬영된 인증샷" />
         ) : phase === 'error' ? (
