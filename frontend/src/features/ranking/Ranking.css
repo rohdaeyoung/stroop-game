@@ -413,6 +413,21 @@
   transform: rotate(-35deg);
 }
 
+/* 촬영 완료 후 — 프레임이 이미 사진 픽셀에 합성돼 있어서 여기서는 그림자·모서리만 잡습니다 */
+.camera__result-card {
+  width: 860px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
+  animation: ranking-fade-up 0.5s ease both;
+  animation-delay: 0.24s;
+}
+.camera__result-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .camera__video,
 .camera__photo,
 .camera__error-box {

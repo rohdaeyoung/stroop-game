@@ -16,6 +16,14 @@ const FRAME_OPTIONS = [
 
 const COUNTDOWN_SECONDS = 3
 
+// camera__polaroid--* 의 CSS 프레임 장식과 같은 색을 씁니다 (Ranking.css 참고).
+const FRAME_COLORS = {
+  dots: '#ff2e78',
+  denimDark: '#1e4079',
+  denimLight: '#2c5aa0',
+  stamp: '#ff5252',
+}
+
 function todayLabel() {
   const d = new Date()
   const pad = (n) => String(n).padStart(2, '0')
@@ -24,6 +32,81 @@ function todayLabel() {
 
 async function openCamera() {
   return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+}
+
+function drawDotsBackground(ctx, width, height) {
+  const spacing = Math.max(14, Math.round(width * 0.02))
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, width, height)
+  ctx.fillStyle = FRAME_COLORS.dots
+  for (let y = spacing / 2; y < height; y += spacing) {
+    for (let x = spacing / 2; x < width; x += spacing) {
+      ctx.beginPath()
+      ctx.arc(x, y, spacing * 0.22, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+}
+
+// repeating-linear-gradient(45deg, ...) 와 같은 결 — 컨텍스트를 45도 돌려놓고 줄무늬를 그립니다.
+function drawDenimBackground(ctx, width, height) {
+  const stripe = Math.max(10, Math.round(width * 0.015))
+  ctx.fillStyle = FRAME_COLORS.denimDark
+  ctx.fillRect(0, 0, width, height)
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(0, 0, width, height)
+  ctx.clip()
+  ctx.translate(width / 2, height / 2)
+  ctx.rotate((45 * Math.PI) / 180)
+  ctx.translate(-width / 2, -height / 2)
+  const diag = Math.sqrt(width * width + height * height)
+  ctx.fillStyle = FRAME_COLORS.denimLight
+  for (let x = -diag; x < diag; x += stripe * 2) {
+    ctx.fillRect(x, -diag, stripe, diag * 3)
+  }
+  ctx.restore()
+}
+
+function drawStampBackground(ctx, width, height) {
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, width, height)
+
+  const borderWidth = Math.max(4, Math.round(width * 0.007))
+  ctx.strokeStyle = FRAME_COLORS.stamp
+  ctx.lineWidth = borderWidth
+  ctx.setLineDash([borderWidth * 1.6, borderWidth * 1.2])
+  ctx.strokeRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth)
+  ctx.setLineDash([])
+}
+
+function drawFrameBackground(ctx, frameKey, width, height) {
+  if (frameKey === 'dots') return drawDotsBackground(ctx, width, height)
+  if (frameKey === 'denim') return drawDenimBackground(ctx, width, height)
+  if (frameKey === 'stamp') return drawStampBackground(ctx, width, height)
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, width, height)
+}
+
+// 우표 탭 장식(camera__polaroid--stamp::before 참고)은 사진 위에 걸쳐 보여야 해서,
+// 사진을 다 그린 뒤(드로우 순서상 맨 위 레이어로) 따로 그립니다 — 배경에 넣으면 사진에 가려집니다.
+function drawFrameForeground(ctx, frameKey, padding) {
+  if (frameKey !== 'stamp') return
+  const tabWidth = padding * 3.6
+  const tabHeight = padding * 1.1
+  ctx.save()
+  ctx.translate(padding * 0.2, padding * 0.9)
+  ctx.rotate((-35 * Math.PI) / 180)
+  ctx.fillStyle = FRAME_COLORS.stamp
+  ctx.fillRect(0, 0, tabWidth, tabHeight)
+  ctx.restore()
+}
+
+function drawDateLabel(ctx, text, x, baselineY, frameKey) {
+  ctx.fillStyle = frameKey === 'denim' ? '#fff' : '#111'
+  ctx.font = "700 22px 'Noto Sans KR', sans-serif"
+  ctx.textBaseline = 'alphabetic'
+  ctx.fillText(text, x, baselineY)
 }
 
 export default function CameraStep({ onNext, onSkip }) {
@@ -97,15 +180,31 @@ export default function CameraStep({ onNext, onSkip }) {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas) return
-    canvas.width = video.videoWidth || 720
-    canvas.height = video.videoHeight || 960
-    const ctx = canvas.getContext('2d')
-    ctx.translate(canvas.width, 0)
-    ctx.scale(-1, 1) // 셀피처럼 좌우 반전해서 저장
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    // 서버 보관 용량이 1장당 1MB 라 PNG 대신 JPEG 로 저장합니다.
-    // 720x960 PNG 는 쉽게 1MB 를 넘습니다. (docs/API.md 인증샷 업로드)
-    setPhoto(canvas.toDataURL('image/jpeg', 0.85))
+
+    const rawWidth = video.videoWidth || 720
+    const rawHeight = video.videoHeight || 960
+    canvas.width = rawWidth
+    canvas.height = rawHeight
+    const rawCtx = canvas.getContext('2d')
+    rawCtx.translate(canvas.width, 0)
+    rawCtx.scale(-1, 1) // 셀피처럼 좌우 반전해서 저장
+    rawCtx.drawImage(video, 0, 0, rawWidth, rawHeight)
+
+    // 프레임은 화면 장식이 아니라 QR 로 나가는 사진에 실제로 합성해서 저장합니다.
+    const padding = Math.round(rawWidth * 0.025)
+    const dateStrip = Math.round(rawWidth * 0.08)
+    const framed = document.createElement('canvas')
+    framed.width = rawWidth + padding * 2
+    framed.height = rawHeight + padding * 2 + dateStrip
+    const framedCtx = framed.getContext('2d')
+
+    drawFrameBackground(framedCtx, frame, framed.width, framed.height)
+    framedCtx.drawImage(canvas, padding, padding)
+    drawFrameForeground(framedCtx, frame, padding)
+    drawDateLabel(framedCtx, todayLabel(), padding, padding + rawHeight + Math.round(dateStrip * 0.62), frame)
+
+    // 서버 보관 용량이 1장당 1MB 라 PNG 대신 JPEG 로 저장합니다. (docs/API.md 인증샷 업로드)
+    setPhoto(framed.toDataURL('image/jpeg', 0.85))
     streamRef.current?.getTracks().forEach((t) => t.stop())
     setPhase('captured')
   }
@@ -163,17 +262,23 @@ export default function CameraStep({ onNext, onSkip }) {
         <img className="camera__shutter-arrows" src={shutterArrows} alt="" aria-hidden="true" />
       )}
 
-      <div className={`camera__polaroid camera__polaroid--${frame}`}>
-        {photo ? (
-          <img className="camera__photo" src={photo} alt="촬영된 인증샷" />
-        ) : phase === 'error' ? (
-          <div className="camera__error-box">📷</div>
-        ) : (
-          <video className="camera__video" ref={videoRef} muted playsInline />
-        )}
-        {phase === 'countdown' && <div className="camera__countdown">{count}</div>}
-        <p className="camera__date">{todayLabel()}</p>
-      </div>
+      {photo ? (
+        // 프레임이 이미 사진 픽셀에 합성돼 있어서, 여기서는 CSS 프레임을 다시 씌우지 않습니다
+        // (그러면 프레임 안에 프레임이 또 생겨요).
+        <div className="camera__result-card">
+          <img className="camera__result-photo" src={photo} alt="촬영된 인증샷 (프레임 포함)" />
+        </div>
+      ) : (
+        <div className={`camera__polaroid camera__polaroid--${frame}`}>
+          {phase === 'error' ? (
+            <div className="camera__error-box">📷</div>
+          ) : (
+            <video className="camera__video" ref={videoRef} muted playsInline />
+          )}
+          {phase === 'countdown' && <div className="camera__countdown">{count}</div>}
+          <p className="camera__date">{todayLabel()}</p>
+        </div>
+      )}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* 피그마의 원형 셔터(shutter_box) — 이 버튼을 눌러야 3초 카운트다운이 시작되고 자동 촬영됩니다 */}
