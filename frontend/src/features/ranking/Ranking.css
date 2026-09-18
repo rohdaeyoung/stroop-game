@@ -223,12 +223,21 @@
   font-weight: 700;
   font-size: 32px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
-.ranking__cta:active { transform: scale(0.97); }
+.ranking__cta:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 18px 5px rgba(255, 255, 255, 0.85), inset 0 0 16px rgba(255, 255, 255, 0.55);
+}
+.ranking__cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
 
 /* ── 09 인증샷 촬영 (Camera) / 10 QR 코드 발송 (QR) — ranking__screen과 같은 캔버스 위에서 단계 전환 */
 .camera__screen,
 .qr__screen {
+  --captured-shift-x: 280px;
   position: relative;
   width: 100%;
   height: 100%;
@@ -287,6 +296,14 @@
   text-align: left;
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.3s;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+}
+.camera__screen--captured .camera__frame-selector {
+  transform: translateX(-260px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 0s, 0.65s;
 }
 .camera__frame-selector-title {
   margin: 0 0 4px;
@@ -295,6 +312,9 @@
 }
 .camera__frame-option {
   position: relative;
+  box-sizing: border-box;
+  width: 148px;
+  height: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -315,23 +335,22 @@
 }
 .camera__frame-preview {
   display: block;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 120px;
   height: 90px;
   border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  background: #080817;
 }
-.camera__frame-preview--basic { background: #fff; }
-.camera__frame-preview--dots {
-  background-color: #fff;
-  background-image: radial-gradient(circle, #ff2e78 3px, transparent 3.5px);
-  background-size: 12px 12px;
+.camera__frame-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.camera__frame-preview--denim {
-  background: repeating-linear-gradient(45deg, #2c5aa0, #2c5aa0 6px, #1e4079 6px, #1e4079 12px);
-}
-.camera__frame-preview--stamp {
-  background: #fff;
-  border: 3px dashed #ff5252;
-}
+.camera__frame-preview--photomatic { aspect-ratio: 736 / 467; }
+.camera__frame-preview--polaroid { aspect-ratio: 600 / 670; }
+.camera__frame-preview--film { aspect-ratio: 420 / 560; }
 .camera__frame-check {
   position: absolute;
   top: -10px;
@@ -377,51 +396,34 @@
 }
 
 .camera__polaroid {
-  /* 아래쪽 여백을 56px + 날짜 텍스트 margin-top 으로 이중으로 잡고 있어서
-     카드가 피그마(645px)보다 36px 더 길었고, 그만큼 화면 위쪽 여백을 잡아먹어
-     "어흥샷" 위쪽이 짤려 보였어요 — 18px 균등 패딩으로 맞춰서 해결 */
+  --camera-frame-width: 889px;
+  --camera-frame-height: 667px;
   position: relative;
-  width: 860px;
-  padding: 18px;
-  border-radius: 12px;
-  background: #fff;
+  width: var(--camera-frame-width);
+  height: var(--camera-frame-height);
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.24s;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.camera__polaroid--dots {
-  background-color: #fff;
-  background-image: radial-gradient(circle, #ff2e78 4px, transparent 4.5px);
-  background-size: 18px 18px;
-}
-.camera__polaroid--denim {
-  background: repeating-linear-gradient(45deg, #2c5aa0, #2c5aa0 10px, #1e4079 10px, #1e4079 20px);
-}
-.camera__polaroid--denim .camera__date { color: #fff; }
-.camera__polaroid--stamp {
-  background: #fff;
-  border: 6px dashed #ff5252;
-}
-.camera__polaroid--stamp::before {
-  content: '';
-  position: absolute;
-  top: 16px;
-  left: -8px;
-  width: 66px;
-  height: 20px;
-  background: #ff5252;
-  transform: rotate(-35deg);
+.camera__screen--captured .camera__polaroid {
+  animation: none;
+  transform: translateX(calc(-1 * var(--captured-shift-x)));
 }
 
-.camera__video,
 .camera__photo,
 .camera__error-box {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: block;
   width: 100%;
-  height: 571px;
+  height: 100%;
   object-fit: cover;
   background: #111;
-  border-radius: 4px;
 }
 .camera__error-box {
   display: flex;
@@ -429,13 +431,117 @@
   justify-content: center;
   font-size: 72px;
 }
+.camera__photo {
+  object-fit: contain;
+  background: transparent;
+}
+
+.camera__frame-canvas {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: var(--frame-ratio);
+  background: #000;
+  overflow: hidden;
+}
+.camera__frame-canvas--photomatic {
+  width: 100%;
+  height: auto;
+}
+.camera__frame-canvas--polaroid,
+.camera__frame-canvas--film {
+  width: auto;
+  height: 100%;
+}
+.camera__frame-slot {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+  transform-origin: center;
+  background: #17120f;
+}
+.camera__frame-slot img,
+.camera__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.camera__frame-slot img { transform: none; }
+.camera__slot-waiting {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(255,255,255,.25);
+  font: 700 42px/1 Inter, sans-serif;
+}
+
+.camera-art {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  color: #fff;
+  font-family: Inter, Arial, sans-serif;
+  font-weight: 700;
+}
+.camera-art--photomatic,
+.camera-art--film {
+  background:
+    radial-gradient(circle at 0 0, rgba(255,55,82,.95), transparent 27%),
+    radial-gradient(circle at 100% 0, rgba(31,80,255,.75), transparent 27%),
+    radial-gradient(circle at 0 100%, rgba(0,124,67,.68), transparent 27%),
+    radial-gradient(circle at 100% 100%, rgba(255,193,38,.76), transparent 27%);
+}
+.camera-art__top { position: absolute; top: 4.25%; font-size: clamp(7px, 1.45vw, 13px); letter-spacing: .03em; }
+.camera-art__top--left { left: 7%; }
+.camera-art__top--center { left: 50%; transform: translateX(-50%); }
+.camera-art__top--right { right: 7%; }
+.camera-art__brand { position: absolute; left: 50%; bottom: 6.5%; transform: translateX(-50%); white-space: nowrap; font-size: clamp(11px, 2.9vw, 26px); }
+.camera-art--film .camera-art__top { top: 2.7%; font-size: clamp(6px, 1.15vw, 10px); }
+.camera-art--film .camera-art__top--left { left: 3.8%; }
+.camera-art--film .camera-art__top--right { right: 3.8%; }
+.camera-art--film .camera-art__brand { bottom: 2.7%; font-size: clamp(6px, 1.15vw, 10px); }
+.camera-art__film-mark { position: absolute; right: 3.8%; bottom: 2.7%; font-size: clamp(6px, 1.15vw, 10px); }
+.camera-art--polaroid::before,
+.camera-art--polaroid::after {
+  content: '';
+  position: absolute;
+  width: 80.1395%;
+  height: 44.5152%;
+  box-sizing: border-box;
+  border: clamp(8px, 2vw, 18px) solid #fafaf7;
+  border-right-width: clamp(48px, 9vw, 76px);
+  border-radius: 3px;
+  box-shadow: 0 10px 11px rgba(0,0,0,.3);
+}
+.camera-art--polaroid::before {
+  left: 7.4459%;
+  top: 8.686%;
+  transform: rotate(6.88deg) skewX(1.66deg);
+}
+.camera-art--polaroid::after {
+  left: 8.8828%;
+  top: 54.7125%;
+  width: 80.0622%;
+  height: 44.5481%;
+  transform: rotate(-4.59deg) skewX(-1.11deg);
+}
+.camera-art__polaroid-label { position: absolute; z-index: 2; writing-mode: vertical-rl; font-size: clamp(7px, 1.45vw, 13px); }
+.camera-art__polaroid-label--date { right: 17%; top: 13%; color: #000; transform: rotate(6.88deg); }
+.camera-art__polaroid-label--brand { right: 14%; bottom: 7%; color: #2675ff; transform: rotate(-4.59deg); }
+.camera-art--compact .camera-art__top,
+.camera-art--compact .camera-art__film-mark,
+.camera-art--compact .camera-art__polaroid-label { font-size: 3px; }
+.camera-art--compact .camera-art__brand { font-size: 5px; }
 
 .camera__countdown {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  right: 18px;
-  height: 571px;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -443,18 +549,25 @@
   font-size: 170px;
   color: #fff;
   background: rgba(0, 0, 0, 0.28);
-  border-radius: 4px;
   text-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  z-index: 4;
 }
 
+.camera__frame-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
 /* 피그마의 shutter_box(원형 셔터) — 눌러야 카운트다운이 시작되는 실제 버튼입니다 */
 .camera__shutter-dot {
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 121px;
   border: none;
-  border-radius: 50%;
-  background: #ff2e78;
-  box-shadow: 0 8px 30px 0 rgba(255, 46, 120, 0.5);
+  background: transparent url('./assets/shutter-button.svg') center / 120px 121px no-repeat;
   flex-shrink: 0;
   cursor: pointer;
   transition: transform 0.1s ease, opacity 0.2s ease;
@@ -487,19 +600,100 @@
   50% { transform: scale(0.85); opacity: 0.7; }
 }
 
-.camera__date {
-  margin: 10px 0 0;
-  font-family: 'Black Han Sans', var(--font-base);
-  font-weight: 400;
-  font-size: 20px;
-  color: #111;
-  text-align: left;
-}
-
 .camera__actions {
   display: flex;
   gap: 20px;
   margin-top: 8px;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.camera__screen--captured .camera__actions {
+  transform: translateY(-85px);
+}
+.camera__screen--captured .camera__shutter-dot {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.camera__celebration {
+  position: absolute !important;
+  left: 1060px;
+  top: 210px;
+  width: 650px;
+  height: 650px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(30px);
+  animation: camera-celebration-enter 0.65s 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.camera__celebration-message {
+  position: relative;
+  z-index: 3;
+  margin: 0 0 12px;
+  padding: 14px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(16, 32, 87, 0.82);
+  box-shadow: 0 10px 40px rgba(30, 110, 255, 0.35);
+  font-family: 'Black Han Sans', var(--font-base);
+  font-size: 36px;
+  color: #fff;
+  white-space: nowrap;
+}
+.camera__celebration-character {
+  position: relative;
+  width: 560px;
+  height: 520px;
+}
+.camera__celebration-lion {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 440px;
+  height: 440px;
+  object-fit: contain;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 22px 40px rgba(0, 80, 255, 0.35));
+}
+.camera__celebration-hands {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 92px;
+  width: 620px;
+  height: 320px;
+  object-fit: contain;
+  transform: translateX(-50%);
+  transform-origin: 50% 80%;
+  animation: camera-hands-wave 1.1s ease-in-out infinite alternate;
+  filter: drop-shadow(0 16px 22px rgba(0, 80, 255, 0.25));
+}
+
+@keyframes camera-celebration-enter {
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes camera-hands-wave {
+  from { transform: translateX(-50%) rotate(-3deg) translateY(3px); }
+  to { transform: translateX(-50%) rotate(3deg) translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera__frame-selector,
+  .camera__polaroid,
+  .camera__actions,
+  .camera__celebration,
+  .ranking__cta,
+  .camera__cta {
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+  }
+  .camera__celebration-hands {
+    animation: none;
+    transform: translateX(-50%);
+  }
 }
 
 .camera__cta {
@@ -516,6 +710,15 @@
   font-weight: 700;
   font-size: 24px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.camera__cta:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 18px 5px rgba(255, 255, 255, 0.85), inset 0 0 16px rgba(255, 255, 255, 0.55);
+}
+.camera__cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
 }
 .camera__cta--ghost {
   background: transparent;
