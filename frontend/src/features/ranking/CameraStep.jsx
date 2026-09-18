@@ -108,10 +108,10 @@ export default function CameraStep({ onNext, onSkip }) {
   }, [phase, count])
 
   useEffect(() => {
-    if (phase !== 'countdown' || !videoRef.current || !streamRef.current) return
+    if ((phase !== 'live' && phase !== 'countdown') || !videoRef.current || !streamRef.current) return
     videoRef.current.srcObject = streamRef.current
     videoRef.current.play().catch(() => {})
-  }, [phase, shots.length])
+  }, [phase, shots.length, frame])
 
   function capture() {
     const video = videoRef.current
@@ -211,7 +211,7 @@ export default function CameraStep({ onNext, onSkip }) {
                 {shots[index] ? (
                   <img src={shots[index].toDataURL('image/jpeg', 0.82)} alt={`${index + 1}번째 촬영`} />
                 ) : index === shots.length ? (
-                  <video className="camera__video" ref={videoRef} muted playsInline />
+                  <video className="camera__video" ref={videoRef} muted playsInline autoPlay />
                 ) : (
                   <div className="camera__slot-waiting">{index + 1}</div>
                 )}

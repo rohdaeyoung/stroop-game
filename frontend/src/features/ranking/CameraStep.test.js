@@ -42,6 +42,12 @@ test('세 프레임용 다중 슬롯 미리보기와 CSS를 사용한다', () =>
   assert.doesNotMatch(rankingCss, /--camera-mask/)
 })
 
+test('프레임을 바꾸면 새 video 요소에 카메라 스트림을 다시 연결한다', () => {
+  assert.match(cameraSource, /videoRef\.current\.srcObject = streamRef\.current/)
+  assert.match(cameraSource, /phase !== ['"]live['"] && phase !== ['"]countdown['"]/)
+  assert.match(cameraSource, /\[phase, shots\.length, frame\]/)
+})
+
 test('정상 촬영 상태에는 건너뛰기 버튼을 표시하지 않는다', () => {
   assert.match(cameraSource, /phase === ['"]error['"]\s*&&/)
   assert.match(cameraSource, />\s*건너뛰기\s*</)
