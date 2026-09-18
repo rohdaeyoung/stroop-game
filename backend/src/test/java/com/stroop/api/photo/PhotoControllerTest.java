@@ -13,6 +13,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.time.Clock;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(PhotoController.class)
 class PhotoControllerTest {
@@ -36,6 +38,9 @@ class PhotoControllerTest {
 
     @MockBean
     PhotoService photoService;
+
+    @MockBean
+    Clock clock;
 
     private static MockMultipartFile photoPart() {
         return new MockMultipartFile("photo", "shot.jpg", "image/jpeg", JPEG);
@@ -113,5 +118,32 @@ class PhotoControllerTest {
         mockMvc.perform(get("/api/photos/" + TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("PHOTO_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("QR 로 연 화면은 이미지 src 와 남은 시간이 담긴 HTML 을 돌려준다")
+    void 화면_보기() throws Exception {
+        Instant now = Instant.parse("2026-10-01T12:00:00Z");
+        given(clock.instant()).willReturn(now);
+        given(photoService.download(TOKEN)).willReturn(
+                new StoredPhoto(TOKEN, JPEG, "image/jpeg", now.plusSeconds(300)));
+
+        mockMvc.perform(get("/api/photos/" + TOKEN + "/view"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(content().string(containsString("/api/photos/" + TOKEN)))
+                .andExpect(content().string(containsString("5:00")));
+    }
+
+    @Test
+    @DisplayName("QR 로 연 화면도 만료·없는 토큰이면 404 와 함께 안내 HTML 을 돌려준다")
+    void 화면_보기_없음() throws Exception {
+        given(photoService.download(TOKEN)).willThrow(new ApiException(ErrorCode.PHOTO_NOT_FOUND));
+
+        mockMvc.perform(get("/api/photos/" + TOKEN + "/view"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("보관 시간이 끝났어요")));
     }
 }
