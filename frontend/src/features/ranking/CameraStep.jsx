@@ -197,17 +197,24 @@ export default function CameraStep({ onNext, onSkip }) {
             style={{ '--frame-ratio': `${selectedFrame.width} / ${selectedFrame.height}` }}
           >
             {selectedFrame.slots.map((slot, index) => (
+              (() => {
+                const bleed = slot.bleed ?? 0
+                const slotX = slot.x - bleed
+                const slotY = slot.y - bleed
+                const slotWidth = slot.width + bleed * 2
+                const slotHeight = slot.height + bleed * 2
+                return (
               <div
                 key={`${frame}-${index}`}
                 className="camera__frame-slot"
                 style={{
-                  left: `${(slot.x / selectedFrame.width) * 100}%`,
-                  top: `${(slot.y / selectedFrame.height) * 100}%`,
-                  width: `${(slot.width / selectedFrame.width) * 100}%`,
-                  height: `${(slot.height / selectedFrame.height) * 100}%`,
+                  left: `${(slotX / selectedFrame.width) * 100}%`,
+                  top: `${(slotY / selectedFrame.height) * 100}%`,
+                  width: `${(slotWidth / selectedFrame.width) * 100}%`,
+                  height: `${(slotHeight / selectedFrame.height) * 100}%`,
                   transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
                   transformOrigin: slot.rotationOrigin
-                    ? `${((slot.rotationOrigin.x - slot.x) / slot.width) * 100}% ${((slot.rotationOrigin.y - slot.y) / slot.height) * 100}%`
+                    ? `${((slot.rotationOrigin.x - slotX) / slotWidth) * 100}% ${((slot.rotationOrigin.y - slotY) / slotHeight) * 100}%`
                     : undefined,
                 }}
               >
@@ -219,6 +226,8 @@ export default function CameraStep({ onNext, onSkip }) {
                   <div className="camera__slot-waiting">{index + 1}</div>
                 )}
               </div>
+                )
+              })()
             ))}
             <FrameArtwork frameKey={frame} />
           </div>

@@ -21,6 +21,11 @@ test('폴라로이드 사진 칸은 카드와 같은 중심을 기준으로 회�
   ])
 })
 
+test('폴라로이드 사진은 회전 테두리 아래까지 겹쳐 검은 틈을 남기지 않는다', () => {
+  const { slots } = getCameraFrame('polaroid')
+  assert.deepEqual(slots.map(({ bleed }) => bleed), [4, 4])
+})
+
 test('알 수 없는 프레임 키는 첫 번째 프레임으로 안전하게 대체한다', () => {
   assert.equal(getCameraFrame('missing').key, 'photomatic')
 })

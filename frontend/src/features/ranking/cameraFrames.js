@@ -15,8 +15,8 @@ export const CAMERA_FRAMES = [
     width: 600,
     height: 670,
     slots: [
-      { x: 66, y: 66, width: 391, height: 263, rotation: 6.88, rotationOrigin: { x: 288.5, y: 197 } },
-      { x: 75, y: 385, width: 391, height: 267, rotation: -4.59, rotationOrigin: { x: 297, y: 516 } },
+      { x: 66, y: 66, width: 391, height: 263, rotation: 6.88, rotationOrigin: { x: 288.5, y: 197 }, bleed: 4 },
+      { x: 75, y: 385, width: 391, height: 267, rotation: -4.59, rotationOrigin: { x: 297, y: 516 }, bleed: 4 },
     ],
   },
   {
@@ -37,12 +37,19 @@ export function getCameraFrame(key) {
 }
 
 export function drawCover(ctx, image, slot) {
+  const bleed = slot.bleed ?? 0
+  const target = {
+    x: slot.x - bleed,
+    y: slot.y - bleed,
+    width: slot.width + bleed * 2,
+    height: slot.height + bleed * 2,
+  }
   const sourceWidth = image.videoWidth || image.naturalWidth || image.width
   const sourceHeight = image.videoHeight || image.naturalHeight || image.height
   if (!sourceWidth || !sourceHeight) return
 
   const sourceRatio = sourceWidth / sourceHeight
-  const targetRatio = slot.width / slot.height
+  const targetRatio = target.width / target.height
   let sx = 0
   let sy = 0
   let sw = sourceWidth
@@ -58,13 +65,13 @@ export function drawCover(ctx, image, slot) {
 
   ctx.save()
   if (slot.rotation) {
-    const originX = slot.rotationOrigin?.x ?? slot.x + slot.width / 2
-    const originY = slot.rotationOrigin?.y ?? slot.y + slot.height / 2
+    const originX = slot.rotationOrigin?.x ?? target.x + target.width / 2
+    const originY = slot.rotationOrigin?.y ?? target.y + target.height / 2
     ctx.translate(originX, originY)
     ctx.rotate((slot.rotation * Math.PI) / 180)
-    ctx.drawImage(image, sx, sy, sw, sh, slot.x - originX, slot.y - originY, slot.width, slot.height)
+    ctx.drawImage(image, sx, sy, sw, sh, target.x - originX, target.y - originY, target.width, target.height)
   } else {
-    ctx.drawImage(image, sx, sy, sw, sh, slot.x, slot.y, slot.width, slot.height)
+    ctx.drawImage(image, sx, sy, sw, sh, target.x, target.y, target.width, target.height)
   }
   ctx.restore()
 }
