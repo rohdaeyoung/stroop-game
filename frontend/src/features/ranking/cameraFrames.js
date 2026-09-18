@@ -15,8 +15,8 @@ export const CAMERA_FRAMES = [
     width: 600,
     height: 670,
     slots: [
-      { x: 70, y: 64, width: 387, height: 261, rotation: 6.88 },
-      { x: 80, y: 390, width: 387, height: 263, rotation: -4.59 },
+      { x: 66, y: 66, width: 391, height: 263, rotation: 6.88, rotationOrigin: { x: 288.5, y: 197 } },
+      { x: 75, y: 385, width: 391, height: 267, rotation: -4.59, rotationOrigin: { x: 297, y: 516 } },
     ],
   },
   {
@@ -58,11 +58,11 @@ export function drawCover(ctx, image, slot) {
 
   ctx.save()
   if (slot.rotation) {
-    const centerX = slot.x + slot.width / 2
-    const centerY = slot.y + slot.height / 2
-    ctx.translate(centerX, centerY)
+    const originX = slot.rotationOrigin?.x ?? slot.x + slot.width / 2
+    const originY = slot.rotationOrigin?.y ?? slot.y + slot.height / 2
+    ctx.translate(originX, originY)
     ctx.rotate((slot.rotation * Math.PI) / 180)
-    ctx.drawImage(image, sx, sy, sw, sh, -slot.width / 2, -slot.height / 2, slot.width, slot.height)
+    ctx.drawImage(image, sx, sy, sw, sh, slot.x - originX, slot.y - originY, slot.width, slot.height)
   } else {
     ctx.drawImage(image, sx, sy, sw, sh, slot.x, slot.y, slot.width, slot.height)
   }

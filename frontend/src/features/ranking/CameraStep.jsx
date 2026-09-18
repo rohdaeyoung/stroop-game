@@ -206,6 +206,9 @@ export default function CameraStep({ onNext, onSkip }) {
                   width: `${(slot.width / selectedFrame.width) * 100}%`,
                   height: `${(slot.height / selectedFrame.height) * 100}%`,
                   transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                  transformOrigin: slot.rotationOrigin
+                    ? `${((slot.rotationOrigin.x - slot.x) / slot.width) * 100}% ${((slot.rotationOrigin.y - slot.y) / slot.height) * 100}%`
+                    : undefined,
                 }}
               >
                 {shots[index] ? (

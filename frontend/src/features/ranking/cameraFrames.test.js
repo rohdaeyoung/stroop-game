@@ -13,6 +13,14 @@ test('프레임별로 서로 다른 사진 2장, 2장, 3장을 촬영한다', ()
   assert.deepEqual(CAMERA_FRAMES.map(({ slots }) => slots.length), [2, 2, 3])
 })
 
+test('폴라로이드 사진 칸은 카드와 같은 중심을 기준으로 회전한다', () => {
+  const { slots } = getCameraFrame('polaroid')
+  assert.deepEqual(slots.map(({ rotationOrigin }) => rotationOrigin), [
+    { x: 288.5, y: 197 },
+    { x: 297, y: 516 },
+  ])
+})
+
 test('알 수 없는 프레임 키는 첫 번째 프레임으로 안전하게 대체한다', () => {
   assert.equal(getCameraFrame('missing').key, 'photomatic')
 })

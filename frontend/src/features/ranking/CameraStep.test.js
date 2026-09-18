@@ -40,6 +40,7 @@ test('세 프레임용 다중 슬롯 미리보기와 CSS를 사용한다', () =>
   assert.match(rankingCss, /\.camera__frame-slot/)
   assert.doesNotMatch(rankingCss, /camera__frame-preview--denim/)
   assert.doesNotMatch(rankingCss, /--camera-mask/)
+  assert.match(cameraSource, /transformOrigin:/)
 })
 
 test('프레임을 바꾸면 새 video 요소에 카메라 스트림을 다시 연결한다', () => {
