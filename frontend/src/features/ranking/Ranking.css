@@ -223,8 +223,16 @@
   font-weight: 700;
   font-size: 32px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
-.ranking__cta:active { transform: scale(0.97); }
+.ranking__cta:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 18px 5px rgba(255, 255, 255, 0.85), inset 0 0 16px rgba(255, 255, 255, 0.55);
+}
+.ranking__cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
 
 /* ── 09 인증샷 촬영 (Camera) / 10 QR 코드 발송 (QR) — ranking__screen과 같은 캔버스 위에서 단계 전환 */
 .camera__screen,
@@ -288,14 +296,14 @@
   text-align: left;
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.3s;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, visibility 0s linear 0s;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
 }
 .camera__screen--captured .camera__frame-selector {
   transform: translateX(-260px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition-delay: 0s, 0s, 0.55s;
+  transition-delay: 0s, 0s, 0.65s;
 }
 .camera__frame-selector-title {
   margin: 0 0 4px;
@@ -503,17 +511,26 @@
 .camera-art--polaroid::after {
   content: '';
   position: absolute;
-  left: 8%;
-  width: 80%;
-  height: 44.5%;
+  width: 80.1395%;
+  height: 44.5152%;
   box-sizing: border-box;
   border: clamp(8px, 2vw, 18px) solid #fafaf7;
   border-right-width: clamp(48px, 9vw, 76px);
   border-radius: 3px;
   box-shadow: 0 10px 11px rgba(0,0,0,.3);
 }
-.camera-art--polaroid::before { top: 7%; transform: rotate(6.88deg); }
-.camera-art--polaroid::after { bottom: 1%; transform: rotate(-4.59deg); }
+.camera-art--polaroid::before {
+  left: 7.4459%;
+  top: 8.686%;
+  transform: rotate(6.88deg) skewX(1.66deg);
+}
+.camera-art--polaroid::after {
+  left: 8.8828%;
+  top: 54.7125%;
+  width: 80.0622%;
+  height: 44.5481%;
+  transform: rotate(-4.59deg) skewX(-1.11deg);
+}
 .camera-art__polaroid-label { position: absolute; z-index: 2; writing-mode: vertical-rl; font-size: clamp(7px, 1.45vw, 13px); }
 .camera-art__polaroid-label--date { right: 17%; top: 13%; color: #000; transform: rotate(6.88deg); }
 .camera-art__polaroid-label--brand { right: 14%; bottom: 7%; color: #2675ff; transform: rotate(-4.59deg); }
@@ -588,6 +605,9 @@
   gap: 20px;
   margin-top: 8px;
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.camera__screen--captured .camera__actions {
+  transform: translateY(-50px);
 }
 .camera__screen--captured .camera__shutter-dot {
   opacity: 0;
@@ -664,7 +684,9 @@
   .camera__frame-selector,
   .camera__polaroid,
   .camera__actions,
-  .camera__celebration {
+  .camera__celebration,
+  .ranking__cta,
+  .camera__cta {
     transition-duration: 0.01ms;
     animation-duration: 0.01ms;
   }
@@ -688,6 +710,15 @@
   font-weight: 700;
   font-size: 24px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.camera__cta:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 18px 5px rgba(255, 255, 255, 0.85), inset 0 0 16px rgba(255, 255, 255, 0.55);
+}
+.camera__cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
 }
 .camera__cta--ghost {
   background: transparent;

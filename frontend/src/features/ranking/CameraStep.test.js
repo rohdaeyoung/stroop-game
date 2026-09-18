@@ -102,3 +102,23 @@ test('사자 손 흔들기는 모션 감소 설정을 존중한다', () => {
   assert.match(rankingCss, /@keyframes camera-hands-wave/)
   assert.match(rankingCss, /@media \(prefers-reduced-motion: reduce\)/)
 })
+
+test('사진과 프레임 선택칸은 같은 속도로 왼쪽 이동한다', () => {
+  const selectorRule = rankingCss.match(/\.camera__frame-selector\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(selectorRule, /transform 0\.65s cubic-bezier\(0\.22, 1, 0\.36, 1\)/)
+  assert.match(selectorRule, /opacity 0\.65s cubic-bezier\(0\.22, 1, 0\.36, 1\)/)
+  assert.match(rankingCss, /transition-delay:\s*0s, 0s, 0\.65s/)
+})
+
+test('촬영 완료 버튼은 중앙에서 50px 위로 이동한다', () => {
+  const actionsRule = rankingCss.match(/\.camera__screen--captured \.camera__actions\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(actionsRule, /transform:\s*translateY\(-50px\)/)
+  assert.doesNotMatch(actionsRule, /translateX/)
+})
+
+test('주요 버튼은 누를 때 흰색 글로우와 눌림 피드백을 준다', () => {
+  assert.match(rankingCss, /\.ranking__cta:active[\s\S]*?scale\(0\.94\)[\s\S]*?rgba\(255,\s*255,\s*255/)
+  assert.match(rankingCss, /\.camera__cta:active[\s\S]*?scale\(0\.94\)[\s\S]*?rgba\(255,\s*255,\s*255/)
+  assert.match(rankingCss, /\.ranking__cta:focus-visible/)
+  assert.match(rankingCss, /\.camera__cta:focus-visible/)
+})

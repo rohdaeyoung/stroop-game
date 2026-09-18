@@ -16,14 +16,44 @@ test('프레임별로 서로 다른 사진 2장, 2장, 3장을 촬영한다', ()
 test('폴라로이드 사진 칸은 카드와 같은 중심을 기준으로 회전한다', () => {
   const { slots } = getCameraFrame('polaroid')
   assert.deepEqual(slots.map(({ rotationOrigin }) => rotationOrigin), [
-    { x: 288.5, y: 197 },
-    { x: 297, y: 516 },
+    { x: 285.094, y: 207.3215 },
+    { x: 293.4835, y: 515.81 },
   ])
+})
+
+test('폴라로이드 프레임은 Figma 17:2의 실측 좌표와 왜곡값을 사용한다', () => {
+  const { slots } = getCameraFrame('polaroid')
+  assert.deepEqual(slots, [
+    {
+      x: 62.6755,
+      y: 76.1955,
+      width: 387,
+      height: 261.383,
+      rotation: 6.88,
+      skewX: 1.66,
+      rotationOrigin: { x: 285.094, y: 207.3215 },
+      bleed: 0,
+    },
+    {
+      x: 71.297,
+      y: 384.574,
+      width: 387,
+      height: 263.488,
+      rotation: -4.59,
+      skewX: -1.11,
+      rotationOrigin: { x: 293.4835, y: 515.81 },
+      bleed: 0,
+    },
+  ])
+})
+
+test('폴라로이드 미리보기와 합성 모두 Figma skew를 적용한다', () => {
+  assert.match(drawCover.toString(), /slot\.skewX/)
 })
 
 test('폴라로이드 사진은 회전 테두리 아래까지 겹쳐 검은 틈을 남기지 않는다', () => {
   const { slots } = getCameraFrame('polaroid')
-  assert.deepEqual(slots.map(({ bleed }) => bleed), [4, 4])
+  assert.deepEqual(slots.map(({ bleed }) => bleed), [0, 0])
 })
 
 test('알 수 없는 프레임 키는 첫 번째 프레임으로 안전하게 대체한다', () => {

@@ -214,7 +214,9 @@ export default function CameraStep({ onNext, onSkip }) {
                   top: `${(slotY / selectedFrame.height) * 100}%`,
                   width: `${(slotWidth / selectedFrame.width) * 100}%`,
                   height: `${(slotHeight / selectedFrame.height) * 100}%`,
-                  transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                  transform: slot.rotation || slot.skewX
+                    ? `rotate(${slot.rotation ?? 0}deg) skewX(${slot.skewX ?? 0}deg)`
+                    : undefined,
                   transformOrigin: slot.rotationOrigin
                     ? `${((slot.rotationOrigin.x - slotX) / slotWidth) * 100}% ${((slot.rotationOrigin.y - slotY) / slotHeight) * 100}%`
                     : undefined,

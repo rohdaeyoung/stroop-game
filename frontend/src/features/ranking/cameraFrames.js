@@ -15,8 +15,8 @@ export const CAMERA_FRAMES = [
     width: 600,
     height: 670,
     slots: [
-      { x: 66, y: 66, width: 391, height: 263, rotation: 6.88, rotationOrigin: { x: 288.5, y: 197 }, bleed: 4 },
-      { x: 75, y: 385, width: 391, height: 267, rotation: -4.59, rotationOrigin: { x: 297, y: 516 }, bleed: 4 },
+      { x: 62.6755, y: 76.1955, width: 387, height: 261.383, rotation: 6.88, skewX: 1.66, rotationOrigin: { x: 285.094, y: 207.3215 }, bleed: 0 },
+      { x: 71.297, y: 384.574, width: 387, height: 263.488, rotation: -4.59, skewX: -1.11, rotationOrigin: { x: 293.4835, y: 515.81 }, bleed: 0 },
     ],
   },
   {
@@ -64,11 +64,12 @@ export function drawCover(ctx, image, slot) {
   }
 
   ctx.save()
-  if (slot.rotation) {
+  if (slot.rotation || slot.skewX) {
     const originX = slot.rotationOrigin?.x ?? target.x + target.width / 2
     const originY = slot.rotationOrigin?.y ?? target.y + target.height / 2
     ctx.translate(originX, originY)
     ctx.rotate((slot.rotation * Math.PI) / 180)
+    ctx.transform(1, 0, Math.tan(((slot.skewX ?? 0) * Math.PI) / 180), 1, 0, 0)
     ctx.drawImage(image, sx, sy, sw, sh, target.x - originX, target.y - originY, target.width, target.height)
   } else {
     ctx.drawImage(image, sx, sy, sw, sh, target.x, target.y, target.width, target.height)
@@ -105,10 +106,11 @@ function drawPhotomatic(ctx) {
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 
-function drawPolaroidCard(ctx, { x, y, width, height, rotation, date, logo }) {
+function drawPolaroidCard(ctx, { x, y, width, height, rotation, skewX, date, logo }) {
   ctx.save()
   ctx.translate(x + width / 2, y + height / 2)
   ctx.rotate((rotation * Math.PI) / 180)
+  ctx.transform(1, 0, Math.tan((skewX * Math.PI) / 180), 1, 0, 0)
   ctx.shadowColor = 'rgba(0,0,0,.3)'
   ctx.shadowBlur = 11
   ctx.shadowOffsetY = 10
@@ -123,10 +125,11 @@ function drawPolaroidCard(ctx, { x, y, width, height, rotation, date, logo }) {
   ctx.restore()
 }
 
-function drawPolaroidBorder(ctx, { x, y, width, height, rotation, date, logo }) {
+function drawPolaroidBorder(ctx, { x, y, width, height, rotation, skewX, date, logo }) {
   ctx.save()
   ctx.translate(x + width / 2, y + height / 2)
   ctx.rotate((rotation * Math.PI) / 180)
+  ctx.transform(1, 0, Math.tan((skewX * Math.PI) / 180), 1, 0, 0)
   ctx.fillStyle = '#fafaf7'
   const left = -width / 2
   const top = -height / 2
@@ -145,8 +148,8 @@ function drawPolaroidBorder(ctx, { x, y, width, height, rotation, date, logo }) 
 function drawPolaroid(ctx) {
   ctx.fillStyle = '#202020'
   ctx.fillRect(0, 0, 600, 670)
-  drawPolaroidCard(ctx, { x: 48, y: 48, width: 481, height: 298, rotation: 6.88, date: '2026.09.22' })
-  drawPolaroidCard(ctx, { x: 57, y: 367, width: 480, height: 298, rotation: -4.59, logo: 'LIKELION SKU' })
+  drawPolaroidCard(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, date: '2026.09.22' })
+  drawPolaroidCard(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, logo: 'LIKELION SKU' })
 }
 
 function drawFilm(ctx) {
@@ -191,8 +194,8 @@ function drawPhotomaticOverlay(ctx) {
 }
 
 function drawPolaroidOverlay(ctx) {
-  drawPolaroidBorder(ctx, { x: 48, y: 48, width: 481, height: 298, rotation: 6.88, date: '2026.09.22' })
-  drawPolaroidBorder(ctx, { x: 57, y: 367, width: 480, height: 298, rotation: -4.59, logo: 'LIKELION SKU' })
+  drawPolaroidBorder(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, date: '2026.09.22' })
+  drawPolaroidBorder(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, logo: 'LIKELION SKU' })
 }
 
 function drawFilmOverlay(ctx) {
