@@ -80,9 +80,22 @@ test('촬영 완료 후 사자가 손을 흔들며 축제 인사를 한다', () 
 
 test('완성 사진은 선택 영역까지만 왼쪽으로 이동하고 사자는 원래 사진 자리에 나타난다', () => {
   assert.match(rankingCss, /--captured-shift-x:/)
-  assert.match(rankingCss, /\.camera__screen--captured \.camera__polaroid\s*\{[^}]*translateX\(calc\(-1 \* var\(--captured-shift-x\)\)\)/s)
+  const capturedPhotoRule = rankingCss.match(/\.camera__screen--captured \.camera__polaroid\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(capturedPhotoRule, /animation:\s*none/)
+  assert.match(capturedPhotoRule, /translateX\(calc\(-1 \* var\(--captured-shift-x\)\)\)/)
   assert.match(rankingCss, /\.camera__screen--captured \.camera__frame-selector\s*\{[^}]*translateX\(-/s)
   assert.match(rankingCss, /\.camera__celebration/)
+})
+
+test('완료 버튼은 화면 중앙에 그대로 유지한다', () => {
+  assert.doesNotMatch(rankingCss, /\.camera__screen--captured \.camera__actions\s*\{[^}]*translateX/s)
+})
+
+test('사자는 빈 오른쪽 영역 중앙에 있고 손은 얼굴 가까이 내려온다', () => {
+  const celebrationRule = rankingCss.match(/\.camera__celebration\s*\{[^}]*\}/s)?.[0] ?? ''
+  const handsRule = rankingCss.match(/\.camera__celebration-hands\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(celebrationRule, /left:\s*1060px/)
+  assert.match(handsRule, /top:\s*92px/)
 })
 
 test('사자 손 흔들기는 모션 감소 설정을 존중한다', () => {

@@ -402,6 +402,7 @@
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .camera__screen--captured .camera__polaroid {
+  animation: none;
   transform: translateX(calc(-1 * var(--captured-shift-x)));
 }
 
@@ -588,10 +589,6 @@
   margin-top: 8px;
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.camera__screen--captured .camera__actions {
-  transform: translateX(calc(-1 * var(--captured-shift-x)));
-}
-
 .camera__screen--captured .camera__shutter-dot {
   opacity: 0;
   pointer-events: none;
@@ -599,8 +596,8 @@
 
 .camera__celebration {
   position: absolute !important;
-  left: 1120px;
-  top: 245px;
+  left: 1060px;
+  top: 270px;
   width: 650px;
   height: 650px;
   display: flex;
@@ -645,7 +642,7 @@
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 8px;
+  top: 92px;
   width: 620px;
   height: 320px;
   object-fit: contain;
