@@ -146,8 +146,6 @@ function drawPolaroidBorder(ctx, { x, y, width, height, rotation, skewX, date, l
 }
 
 function drawPolaroid(ctx) {
-  ctx.fillStyle = '#202020'
-  ctx.fillRect(0, 0, 600, 670)
   drawPolaroidCard(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, date: '2026.09.22' })
   drawPolaroidCard(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, logo: 'LIKELION SKU' })
 }
@@ -181,7 +179,9 @@ export function composeFrame(canvas, frame, images) {
   if (frame.key === 'polaroid') drawPolaroidOverlay(ctx)
   if (frame.key === 'film') drawFilmOverlay(ctx)
 
-  return canvas.toDataURL('image/jpeg', 0.85)
+  return frame.key === 'polaroid'
+    ? canvas.toDataURL('image/png')
+    : canvas.toDataURL('image/jpeg', 0.85)
 }
 
 function drawPhotomaticOverlay(ctx) {

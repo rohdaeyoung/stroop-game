@@ -97,3 +97,30 @@ test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만�
   assert.equal(draws.length, 3)
   assert.equal(result, 'data:image/jpeg;base64,result')
 })
+
+test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만든다', () => {
+  const fills = []
+  const gradient = { addColorStop() {} }
+  const ctx = {
+    fillStyle: '',
+    save() {}, restore() {}, translate() {}, rotate() {}, transform() {},
+    fillRect(...args) { fills.push({ color: this.fillStyle, args }) },
+    fillText() {}, drawImage() {},
+    createRadialGradient() { return gradient },
+  }
+  const canvas = {
+    getContext: () => ctx,
+    toDataURL(type) {
+      assert.equal(type, 'image/png')
+      return 'data:image/png;base64,result'
+    },
+  }
+
+  const result = composeFrame(canvas, getCameraFrame('polaroid'), [
+    { width: 640, height: 480 },
+    { width: 640, height: 480 },
+  ])
+
+  assert.equal(result, 'data:image/png;base64,result')
+  assert.equal(fills.some(({ color, args }) => color === '#202020' && args.join(',') === '0,0,600,670'), false)
+})
