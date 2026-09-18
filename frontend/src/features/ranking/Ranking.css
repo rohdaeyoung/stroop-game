@@ -409,6 +409,10 @@
   justify-content: center;
   font-size: 72px;
 }
+.camera__photo {
+  object-fit: contain;
+  background: transparent;
+}
 
 .camera__frame-canvas {
   position: absolute;

@@ -58,3 +58,9 @@ test('최종 JPEG만 기존 다음 단계로 전달한다', () => {
   assert.match(cameraSource, /onNext\(photo\)/)
   assert.match(cameraSource, /촬영한 사진은 결과 화면과 함께 저장돼요/)
 })
+
+test('촬영 전후 프레임 비율과 크기를 동일하게 유지한다', () => {
+  const photoRule = rankingCss.match(/\.camera__photo\s*\{[^}]+\}/s)?.[0] ?? ''
+  assert.match(photoRule, /object-fit:\s*contain/)
+  assert.match(photoRule, /background:\s*transparent/)
+})
