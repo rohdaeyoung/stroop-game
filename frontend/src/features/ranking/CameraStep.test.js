@@ -1,123 +1,53 @@
 import assert from 'node:assert/strict'
-import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const cameraSource = readFileSync(new URL('./CameraStep.jsx', import.meta.url), 'utf8')
 const rankingCss = readFileSync(new URL('./Ranking.css', import.meta.url), 'utf8')
 
-const replacementFrameHashes = {
-  basic: '1f986b9160a5b7fcc1dc50d5531ce7487179273accad2b135e7a703c518898ed',
-  denim: 'a008b0a808d6a672f163221aaf73f87d2887f9cc49901aacd6a5ad07bf187739',
-  stamp: '78a91ba8a147b482700ef0296d215d7f574f679b1c8a9a37e0250bbf53c70249',
-}
-
-const framePreviews = cameraSource.match(/const FRAME_PREVIEWS = \{[^}]+\}/s)?.[0] ?? ''
-
-test('approved replacement images are used as camera frames', () => {
-  for (const [frame, expectedHash] of Object.entries(replacementFrameHashes)) {
-    const asset = readFileSync(new URL(`./assets/camera-frame-${frame}.png`, import.meta.url))
-    const actualHash = createHash('sha256').update(asset).digest('hex')
-    assert.equal(actualHash, expectedHash)
-  }
+test('새 Figma 프레임 설정만 사용한다', () => {
+  assert.match(cameraSource, /import \{ CAMERA_FRAMES, composeFrame, getCameraFrame \} from ['"]\.\/cameraFrames\.js['"]/)
+  assert.match(cameraSource, /useState\(['"]photomatic['"]\)/)
+  assert.match(cameraSource, /CAMERA_FRAMES\.map/)
+  assert.doesNotMatch(cameraSource, /camera-(?:frame|mask|preview)-(?:basic|dots|denim|stamp)/)
 })
 
-test('each frame masks the camera with its actual transparent opening', () => {
-  for (const frame of ['basic', 'dots', 'denim', 'stamp']) {
-    assert.match(cameraSource, new RegExp(`camera-mask-${frame}\\.png`))
-    assert.match(cameraSource, new RegExp(`${frame}:\\s*cameraMask`, 'm'))
-  }
-  assert.match(cameraSource, /--camera-mask/)
-  assert.doesNotMatch(rankingCss, /--camera-window/)
+test('셔터는 한 번만 누르고 필요한 사진을 자동으로 연속 촬영한다', () => {
+  assert.match(cameraSource, /const \[shots, setShots\] = useState\(\[\]\)/)
+  assert.match(cameraSource, /selectedFrame\.slots\.length/)
+  assert.match(cameraSource, /setCount\(COUNTDOWN_SECONDS\)/)
+  assert.match(cameraSource, /setPhase\(['"]countdown['"]\)/)
+  assert.match(cameraSource, /composeFrame\(canvas, selectedFrame, nextShots\)/)
+  assert.equal((cameraSource.match(/onClick=\{startCountdown\}/g) ?? []).length, 1)
 })
 
-test('네 프레임 모두 Figma 원본 에셋을 사용한다', () => {
-  for (const asset of ['basic', 'dots', 'denim', 'stamp']) {
-    assert.match(cameraSource, new RegExp(`camera-frame-${asset}\\.png`))
-    assert.match(cameraSource, new RegExp(`${asset}:\\s*cameraFrame`, 'm'))
-  }
-  assert.match(cameraSource, /className=['"]camera__frame-overlay['"]/) 
-  assert.match(cameraSource, /src=\{FRAME_ASSETS\[frame\]\}/)
+test('촬영 진행 장수와 남은 카운트다운을 안내한다', () => {
+  assert.match(cameraSource, /촬영 중/)
+  assert.match(cameraSource, /shots\.length \+ 1/)
+  assert.match(cameraSource, /selectedFrame\.slots\.length/)
 })
 
-test('프레임 선택 썸네일은 교체된 프레임 이미지를 그대로 보여준다', () => {
-  assert.match(cameraSource, /camera-preview-dots/)
-  assert.match(framePreviews, /dots:\s*cameraPreviewDots/)
-  assert.match(framePreviews, /basic:\s*cameraFrameBasic/)
-  assert.match(framePreviews, /denim:\s*cameraFrameDenim/)
-  assert.match(framePreviews, /stamp:\s*cameraFrameStamp/)
-  assert.match(cameraSource, /src=\{FRAME_PREVIEWS\[opt\.key\]\}/)
+test('재촬영은 결과와 연속 촬영 상태를 모두 초기화한다', () => {
+  assert.match(cameraSource, /setShots\(\[\]\)/)
+  assert.match(cameraSource, /setPhoto\(null\)/)
+  assert.match(cameraSource, /setCount\(COUNTDOWN_SECONDS\)/)
 })
 
-test('카메라 영상은 공통 프레임 캔버스를 빈틈없이 채운다', () => {
-  const polaroidRule = rankingCss.match(/\.camera__polaroid\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(polaroidRule, /padding:\s*0/)
-  assert.match(polaroidRule, /overflow:\s*hidden/)
-  assert.match(polaroidRule, /width:\s*var\(--camera-frame-width\)/)
-  assert.match(polaroidRule, /height:\s*var\(--camera-frame-height\)/)
-  assert.match(polaroidRule, /background:\s*transparent/)
-
-  const mediaRule = rankingCss.match(/\.camera__video,[\s\S]*?\.camera__error-box\s*\{[^}]+\}/)?.[0] ?? ''
-  assert.match(mediaRule, /inset:\s*0/)
-  assert.match(mediaRule, /width:\s*100%/)
-  assert.match(mediaRule, /height:\s*100%/)
-  assert.match(mediaRule, /object-fit:\s*cover/)
-  assert.match(mediaRule, /-webkit-mask:\s*var\(--camera-mask\)/)
-  assert.match(mediaRule, /mask:\s*var\(--camera-mask\)/)
-  assert.doesNotMatch(mediaRule, /clip-path/)
-})
-
-test('프레임에 날짜를 표시하지 않는다', () => {
-  assert.doesNotMatch(cameraSource, /camera__date/)
-  assert.doesNotMatch(cameraSource, /todayLabel/)
-  assert.doesNotMatch(rankingCss, /\.camera__date/)
-})
-
-test('우표 프레임도 4대3 캔버스에서 회전 없이 표시한다', () => {
-  const stampRule = rankingCss.match(/\.camera__polaroid--stamp\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.doesNotMatch(stampRule, /--camera-frame-(?:width|height)/)
-  assert.doesNotMatch(rankingCss, /\.camera__polaroid--stamp \.camera__frame-overlay/)
-})
-
-test('네 프레임 전환 시 캔버스와 선택 카드 크기가 변하지 않는다', () => {
-  const polaroidRule = rankingCss.match(/\.camera__polaroid\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(polaroidRule, /--camera-frame-width:\s*889px/)
-  assert.match(polaroidRule, /--camera-frame-height:\s*667px/)
-  assert.doesNotMatch(rankingCss, /\.camera__polaroid--(?:dots|denim|stamp)\s*\{[^}]*--camera-frame-(?:width|height)/s)
-
-  const optionRule = rankingCss.match(/\.camera__frame-option\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(optionRule, /box-sizing:\s*border-box/)
-  assert.match(optionRule, /width:\s*148px/)
-  assert.match(optionRule, /height:\s*180px/)
-
-  const previewRule = rankingCss.match(/\.camera__frame-preview\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(previewRule, /width:\s*120px/)
-  assert.match(previewRule, /height:\s*90px/)
-})
-
-test('카운트다운 암막은 카메라와 프레임 전체를 덮는다', () => {
-  const countdownRule = rankingCss.match(/\.camera__countdown\s*\{[^}]+\}/s)?.[0] ?? ''
-  assert.match(countdownRule, /inset:\s*0/)
-  assert.match(countdownRule, /z-index:\s*4/)
-  assert.doesNotMatch(countdownRule, /height:\s*571px/)
-  assert.doesNotMatch(countdownRule, /top:\s*18px/)
-})
-
-test('셔터 버튼은 Figma의 120x121px 이중 링 에셋을 사용한다', () => {
-  const shutterRule = rankingCss.match(/\.camera__shutter-dot\s*\{[^}]+\}/s)?.[0] ?? ''
-
-  assert.match(shutterRule, /width:\s*120px/)
-  assert.match(shutterRule, /height:\s*121px/)
-  assert.match(shutterRule, /url\(['"]\.\/assets\/shutter-button\.svg['"]\)/)
+test('세 프레임용 다중 슬롯 미리보기와 CSS를 사용한다', () => {
+  assert.match(cameraSource, /selectedFrame\.slots\.map/)
+  assert.match(cameraSource, /camera__frame-slot/)
+  assert.match(rankingCss, /\.camera__frame-canvas/)
+  assert.match(rankingCss, /\.camera__frame-slot/)
+  assert.doesNotMatch(rankingCss, /camera__frame-preview--denim/)
+  assert.doesNotMatch(rankingCss, /--camera-mask/)
 })
 
 test('정상 촬영 상태에는 건너뛰기 버튼을 표시하지 않는다', () => {
-  assert.doesNotMatch(cameraSource, /촬영 건너뛰기/)
   assert.match(cameraSource, /phase === ['"]error['"]\s*&&/)
   assert.match(cameraSource, />\s*건너뛰기\s*</)
 })
 
-test('사진 저장 안내 문구는 Figma 문구와 일치한다', () => {
+test('최종 JPEG만 기존 다음 단계로 전달한다', () => {
+  assert.match(cameraSource, /onNext\(photo\)/)
   assert.match(cameraSource, /촬영한 사진은 결과 화면과 함께 저장돼요/)
-  assert.doesNotMatch(cameraSource, /서버에 저장되지 않아요/)
 })
