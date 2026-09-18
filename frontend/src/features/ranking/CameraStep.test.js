@@ -64,3 +64,28 @@ test('촬영 전후 프레임 비율과 크기를 동일하게 유지한다', ()
   assert.match(photoRule, /object-fit:\s*contain/)
   assert.match(photoRule, /background:\s*transparent/)
 })
+
+test('촬영 완료 후 프레임 선택을 숨기고 변경할 수 없게 한다', () => {
+  assert.match(cameraSource, /camera__screen--captured/)
+  assert.match(cameraSource, /aria-hidden=\{phase === ['"]captured['"]\}/)
+  assert.match(cameraSource, /disabled=\{phase !== ['"]live['"]\}/)
+})
+
+test('촬영 완료 후 사자가 손을 흔들며 축제 인사를 한다', () => {
+  assert.match(cameraSource, /celebration-lion\.png/)
+  assert.match(cameraSource, /celebration-hands\.png/)
+  assert.match(cameraSource, /phase === ['"]captured['"]\s*&&/)
+  assert.match(cameraSource, /즐거운 축제 되세요~!/)
+})
+
+test('완성 사진은 선택 영역까지만 왼쪽으로 이동하고 사자는 원래 사진 자리에 나타난다', () => {
+  assert.match(rankingCss, /--captured-shift-x:/)
+  assert.match(rankingCss, /\.camera__screen--captured \.camera__polaroid\s*\{[^}]*translateX\(calc\(-1 \* var\(--captured-shift-x\)\)\)/s)
+  assert.match(rankingCss, /\.camera__screen--captured \.camera__frame-selector\s*\{[^}]*translateX\(-/s)
+  assert.match(rankingCss, /\.camera__celebration/)
+})
+
+test('사자 손 흔들기는 모션 감소 설정을 존중한다', () => {
+  assert.match(rankingCss, /@keyframes camera-hands-wave/)
+  assert.match(rankingCss, /@media \(prefers-reduced-motion: reduce\)/)
+})

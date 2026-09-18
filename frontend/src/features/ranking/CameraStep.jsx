@@ -1,6 +1,8 @@
 // 👤 담당: 이혜원
 // 09_인증샷 촬영 — 프레임 선택 + 한 번의 셔터로 2~3장 연속 촬영
 import { useEffect, useMemo, useRef, useState } from 'react'
+import celebrationHands from './assets/celebration-hands.png'
+import celebrationLion from './assets/celebration-lion.png'
 import shutterArrows from './assets/shutter-arrows.png'
 import { CAMERA_FRAMES, composeFrame, getCameraFrame } from './cameraFrames.js'
 
@@ -154,8 +156,8 @@ export default function CameraStep({ onNext, onSkip }) {
   }
 
   return (
-    <div className="camera__screen">
-      <aside className="camera__frame-selector">
+    <div className={`camera__screen${phase === 'captured' ? ' camera__screen--captured' : ''}`}>
+      <aside className="camera__frame-selector" aria-hidden={phase === 'captured'}>
         <p className="camera__frame-selector-title">프레임 선택</p>
         {CAMERA_FRAMES.map((option) => (
           <button
@@ -243,6 +245,16 @@ export default function CameraStep({ onNext, onSkip }) {
         disabled={phase !== 'live'}
         aria-label="촬영 시작"
       />
+
+      {phase === 'captured' && (
+        <div className="camera__celebration" aria-live="polite">
+          <p className="camera__celebration-message">즐거운 축제 되세요~!</p>
+          <div className="camera__celebration-character" aria-hidden="true">
+            <img className="camera__celebration-lion" src={celebrationLion} alt="" />
+            <img className="camera__celebration-hands" src={celebrationHands} alt="" />
+          </div>
+        </div>
+      )}
 
       {phase === 'captured' && (
         <div className="camera__actions">
