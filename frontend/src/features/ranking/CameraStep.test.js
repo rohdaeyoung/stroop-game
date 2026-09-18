@@ -110,9 +110,9 @@ test('사진과 프레임 선택칸은 같은 속도로 왼쪽 이동한다', ()
   assert.match(rankingCss, /transition-delay:\s*0s, 0s, 0\.65s/)
 })
 
-test('촬영 완료 버튼은 중앙에서 50px 위로 이동한다', () => {
+test('촬영 완료 버튼은 중앙에서 85px 위로 이동한다', () => {
   const actionsRule = rankingCss.match(/\.camera__screen--captured \.camera__actions\s*\{[^}]*\}/s)?.[0] ?? ''
-  assert.match(actionsRule, /transform:\s*translateY\(-50px\)/)
+  assert.match(actionsRule, /transform:\s*translateY\(-85px\)/)
   assert.doesNotMatch(actionsRule, /translateX/)
 })
 
@@ -121,4 +121,18 @@ test('주요 버튼은 누를 때 흰색 글로우와 눌림 피드백을 준다
   assert.match(rankingCss, /\.camera__cta:active[\s\S]*?scale\(0\.94\)[\s\S]*?rgba\(255,\s*255,\s*255/)
   assert.match(rankingCss, /\.ranking__cta:focus-visible/)
   assert.match(rankingCss, /\.camera__cta:focus-visible/)
+})
+
+test('사자는 사진 이동이 거의 끝난 뒤 짧은 거리에서 등장한다', () => {
+  const rule = rankingCss.match(/\.camera__celebration\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(rule, /top:\s*210px/)
+  assert.match(rule, /translateX\(30px\)/)
+  assert.match(rule, /0\.65s 0\.52s/)
+})
+
+test('완료 버튼과 손 흔들기 배치를 영상 기준으로 정돈한다', () => {
+  assert.match(rankingCss, /\.camera__screen--captured \.camera__actions\s*\{[^}]*translateY\(-85px\)/s)
+  assert.match(rankingCss, /camera-hands-wave 1\.1s/)
+  assert.match(rankingCss, /rotate\(-3deg\) translateY\(3px\)/)
+  assert.match(rankingCss, /rotate\(3deg\) translateY\(-3px\)/)
 })
