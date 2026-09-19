@@ -68,6 +68,10 @@
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes camera-frame-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .ranking__badge {
   display: inline-flex;
@@ -237,7 +241,7 @@
 /* ── 09 인증샷 촬영 (Camera) / 10 QR 코드 발송 (QR) — ranking__screen과 같은 캔버스 위에서 단계 전환 */
 .camera__screen,
 .qr__screen {
-  --captured-shift-x: 280px;
+  --captured-shift-x: 400px;
   position: relative;
   width: 100%;
   height: 100%;
@@ -249,6 +253,15 @@
   overflow: hidden;
   color: #fff;
   text-align: center;
+}
+
+/* Captured-state content nearly fills the 1080-tall canvas, so
+   justify-content: center has almost no slack to push the header down
+   with. Carve out top room explicitly (the matching space is trimmed
+   back from .camera__polaroid's margin-top below, so total height
+   still fits). */
+.camera__screen--captured {
+  padding-top: 48px;
 }
 
 .camera__screen::before,
@@ -284,60 +297,67 @@
   z-index: 1;
 }
 
-/* 프레임 선택 사이드바 — 피그마 원본 left:70 top:200 */
+/* 프레임 선택 - 우측 사이드에 세로로 배치 */
 .camera__frame-selector {
   position: absolute;
-  left: 70px;
+  right: 40px;
   top: 200px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: 148px;
+  gap: 14px;
   text-align: left;
-  animation: ranking-fade-up 0.5s ease both;
+  opacity: 1;
+  transform: translateX(0);
+  /* backwards (not both): once the entrance animation ends it must hand
+     opacity/transform back to plain styles, or the captured-state transition
+     below has no non-animated value to interpolate from and just snaps. */
+  animation: ranking-fade-up 0.5s ease backwards;
   animation-delay: 0.3s;
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
 }
 .camera__screen--captured .camera__frame-selector {
-  transform: translateX(-260px);
+  animation: none;
+  /* slides off to the right now that the selector lives on that side. */
+  transform: translateX(260px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition-delay: 0s, 0s, 0.65s;
 }
 .camera__frame-selector-title {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 17px;
+  white-space: nowrap;
 }
 .camera__frame-option {
   position: relative;
   box-sizing: border-box;
-  width: 148px;
-  height: 180px;
+  width: 140px;
+  height: 168px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 12px;
-  border-radius: 16px;
+  padding: 10px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
   font-family: 'Noto Sans KR', var(--font-base);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13px;
   cursor: pointer;
 }
 .camera__frame-option--selected {
-  border: 3px solid #ff2e78;
+  border: 2px solid #ff2e78;
   background: rgba(255, 255, 255, 0.16);
 }
 .camera__frame-preview {
   display: block;
   flex: 0 0 auto;
-  width: 120px;
-  height: 90px;
+  width: 112px;
+  height: 84px;
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -353,40 +373,50 @@
 .camera__frame-preview--film { aspect-ratio: 420 / 560; }
 .camera__frame-check {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 24px;
-  height: 24px;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #ff2e78;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
 }
 
-.camera__badge {
-  display: inline-flex;
-  padding: 10px 22px;
-  border-radius: 999px;
-  border: 1px solid #2ec770;
-  background: rgba(46, 199, 112, 0.18);
+.camera__pose-hint {
+  margin: 16px 0 0;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.85);
   animation: ranking-fade-up 0.5s ease both;
 }
 
 .camera__title {
-  margin: 0;
+  margin: 18px 0 0;
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
   font-size: 56px;
+  letter-spacing: 0.02em;
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.08s;
 }
+/* Captured phase drops the badge above the title, so the flex column has
+   more free space to center with - pull the title back up to Figma's
+   measured position instead of letting it drift down. */
+.camera__screen--captured .camera__title {
+  font-size: 96px;
+  margin-top: -21px;
+}
+.camera__screen--captured .camera__subtitle {
+  font-size: 32px;
+  margin-top: -8px;
+}
 
 .camera__subtitle {
-  margin: 0;
+  margin: 10px 0 0;
   min-height: 30px;
   font-weight: 500;
   font-size: 22px;
@@ -405,13 +435,48 @@
   overflow: hidden;
   background: transparent;
   box-shadow: 0 16px 60px 0 rgba(0, 0, 0, 0.35);
-  animation: ranking-fade-up 0.5s ease both;
+  margin-top: 28px;
+  /* without this, the flex column silently shrinks the box below its set
+     height/width whenever the live-view box (below) is tall enough that
+     total column content would exceed the 1080-tall canvas - overriding
+     even !important declarations, since shrinking happens during layout,
+     not the CSS cascade. */
+  flex-shrink: 0;
+  /* pushed to the far left edge (not centered) so the magnifier panel on
+     the right has as much room as possible - the shot is still small on
+     screen from a few steps back, so the magnifier gives people a way to
+     check their framing. Entrance uses an opacity-only fade (not the
+     shared ranking-fade-up) because that keyframe's translateY would
+     fight this element's translateX. */
+  /* --slide-kick is a transient "come from the right" offset - normally
+     0px, briefly pushed positive and eased back on every frame-type
+     switch (see CameraStep.jsx) to sell the transition as motion. */
+  transform: translateX(calc(-1 * var(--live-shift-x, 475px) + var(--slide-kick, 0px)));
+  animation: camera-frame-fade-in 0.5s ease backwards;
   animation-delay: 0.24s;
-  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  /* width/height animate too (not just transform) so switching frame types
+     reads as one continuous slide-and-resize instead of the box snapping
+     to its new size mid-slide - polaroid/film differ in width, so this is
+     the polish that hides that size difference behind motion. */
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), width 0.5s cubic-bezier(0.22, 1, 0.36, 1), height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Live view sizes the box to the frame's own aspect ratio (set inline
+   per frame from JS) instead of the fixed 889x667 used everywhere else -
+   the box and the magnifier next to it both need to shrink and grow
+   together as the frame type changes. */
+.camera__screen:not(.camera__screen--captured) .camera__polaroid {
+  width: var(--live-frame-width, 889px);
+  height: var(--live-frame-height, 540px);
+  margin-top: var(--live-frame-margin-top, 28px);
 }
 .camera__screen--captured .camera__polaroid {
   animation: none;
-  transform: translateX(calc(-1 * var(--captured-shift-x)));
+  /* trim back the live-view breathing-room margin here specifically -
+     captured adds a header top-padding + celebration/actions row that
+     the plain camera view doesn't have, so the same margin would push
+     the hint text below the canvas bottom. */
+  margin-top: 4px;
+  transform: translate(calc(-1 * var(--captured-shift-x)), 0px);
 }
 
 .camera__photo,
@@ -454,6 +519,12 @@
 .camera__frame-canvas--film {
   width: auto;
   height: 100%;
+}
+.camera__frame-canvas--polaroid {
+  /* the polaroid artwork has no black backing (unlike photomatic/film) -
+     the composed photo ends up transparent there, so the live preview
+     shouldn't show a black box behind the rotated cards either. */
+  background: transparent;
 }
 .camera__frame-slot {
   position: absolute;
@@ -566,6 +637,7 @@
 .camera__shutter-dot {
   width: 120px;
   height: 121px;
+  margin-top: 24px;
   border: none;
   background: transparent url('./assets/shutter-button.svg') center / 120px 121px no-repeat;
   flex-shrink: 0;
@@ -582,18 +654,50 @@
   animation: camera-shutter-pulse 1s ease-in-out infinite;
 }
 
-/* 셔터를 누르라고 가리키는 손그림 화살표 (피그마 원본 장식 요소)
-   피그마 실측: 803x452, camera_viewfinder 기준 left:460 top:110
-   → 캔버스(1920x1080) 절대좌표로 환산하면 대략 left:1190 top:328 */
+/* 셔터를 누르라고 가리키는 손그림 화살표 - 셔터 버튼 좌측 상단에서
+   중앙(셔터) 쪽을 가리키도록 배치 */
 .camera__shutter-arrows {
   position: absolute;
-  left: 1190px;
-  top: 328px;
-  width: 803px;
-  height: 452px;
+  left: 660px;
+  top: 902px;
+  width: 210px;
+  height: 118px;
   object-fit: contain;
   pointer-events: none;
   z-index: 1;
+  /* the artwork itself is drawn pointing left - flip it so it points
+     right, at the shutter button sitting to its right. */
+  transform: scaleX(-1);
+}
+
+/* 확대경 — 프레임 옆 빈 공간에 실시간 화면을 크게 보여줘서 부스에서 멀리
+   떨어져 찍을 때도 어떻게 나오는지 잘 보이게 함. left/max-width는 프레임
+   폭에 맞춰 JS에서 인라인으로 넣어줌 (프레임마다 폭이 다르기 때문). */
+.camera__magnifier {
+  position: absolute;
+  top: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: camera-frame-fade-in 0.5s ease backwards;
+  animation-delay: 0.32s;
+  /* left shifts when switching frame types (polaroid/film have different
+     widths, so the magnifier starts at a different x) - sliding it
+     smoothly here (matching .camera__polaroid's own width/transform
+     transition above) turns that jump into one continuous motion. */
+  transition: left 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.camera__magnifier-video {
+  /* width/height are set inline per shot (JS computes the fit-within-box
+     size from the active slot's aspect ratio) - NOT left to width/height:
+     auto here, because a real <video> with auto sizing uses its own native
+     capture resolution whenever that's already smaller than any max-width/
+     max-height cap, and never grows past it to fill the box. */
+  border-radius: 28px;
+  object-fit: cover;
+  transform: scaleX(-1);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.35), 0 20px 70px 0 rgba(0, 0, 0, 0.45);
+  background: #17120f;
 }
 @keyframes camera-shutter-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -604,20 +708,23 @@
   display: flex;
   gap: 20px;
   margin-top: 8px;
-  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.camera__screen--captured .camera__actions {
-  transform: translateY(-85px);
+  /* stays centered on the canvas in every phase - the buttons sit in
+     their own row below the photo, so the photo's left shift when
+     captured doesn't need to be followed here. */
 }
 .camera__screen--captured .camera__shutter-dot {
+  /* absolute (not just opacity:0): otherwise this still eats its 120px
+     of flex height, which throws off the centered layout's math and
+     makes the header block above get squeezed toward the top. */
+  position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
 .camera__celebration {
   position: absolute !important;
-  left: 1060px;
-  top: 210px;
+  left: 1030px;
+  top: 250px;
   width: 650px;
   height: 650px;
   display: flex;
@@ -632,15 +739,14 @@
 .camera__celebration-message {
   position: relative;
   z-index: 3;
-  margin: 0 0 12px;
-  padding: 14px 28px;
-  border: 2px solid rgba(255, 255, 255, 0.28);
-  border-radius: 999px;
-  background: rgba(16, 32, 87, 0.82);
-  box-shadow: 0 10px 40px rgba(30, 110, 255, 0.35);
+  margin: 130px 0 0;
   font-family: 'Black Han Sans', var(--font-base);
-  font-size: 36px;
+  font-size: 64px;
   color: #fff;
+  text-shadow:
+    0 0 18px rgba(80, 160, 255, 0.85),
+    0 0 42px rgba(60, 130, 255, 0.6),
+    0 8px 30px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
 }
 .camera__celebration-character {
@@ -726,24 +832,23 @@
   box-shadow: none;
 }
 
-.camera__hint {
-  margin: 0;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
 /* ── 10 QR 코드 발송 */
 .qr__title {
+  /* matches the captured-photo screen's header (.camera__screen--captured
+     .camera__title) for visual consistency between the two screens right
+     next to each other in the flow */
   margin: 0;
   font-family: 'Black Han Sans', var(--font-base);
   font-weight: 400;
-  font-size: 60px;
+  font-size: 96px;
+  letter-spacing: 0.02em;
   animation: ranking-fade-up 0.5s ease both;
 }
 .qr__subtitle {
+  /* matches .camera__screen--captured .camera__subtitle */
   margin: 0;
   font-weight: 500;
-  font-size: 22px;
+  font-size: 32px;
   color: rgba(255, 255, 255, 0.6);
   animation: ranking-fade-up 0.5s ease both;
   animation-delay: 0.08s;

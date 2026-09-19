@@ -96,17 +96,23 @@ function drawLabel(ctx, text, x, y, size, align = 'left', color = '#fff') {
 function drawPhotomatic(ctx) {
   ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, 736, 467)
-  drawGlow(ctx, 0, 0, 190, 'rgba(255,55,82,.95)')
-  drawGlow(ctx, 736, 0, 190, 'rgba(31,80,255,.75)')
-  drawGlow(ctx, 0, 467, 190, 'rgba(0,124,67,.68)')
-  drawGlow(ctx, 736, 467, 190, 'rgba(255,193,38,.76)')
+  const glowRadius = 0.27 * Math.hypot(736, 467)
+  drawGlow(ctx, 0, 0, glowRadius, 'rgba(255,55,82,.95)')
+  drawGlow(ctx, 736, 0, glowRadius, 'rgba(31,80,255,.75)')
+  drawGlow(ctx, 0, 467, glowRadius, 'rgba(0,124,67,.68)')
+  drawGlow(ctx, 736, 467, glowRadius, 'rgba(255,193,38,.76)')
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
   drawLabel(ctx, 'PHOTOMATIC', 684, 20, 13, 'right')
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 
-function drawPolaroidCard(ctx, { x, y, width, height, rotation, skewX, date, logo }) {
+// Figma's "Polaroid Card" shape is rounded 3px; the divider ("Flap Seam")
+// line next to the label runs a fixed length per card, not a fraction of
+// the card height.
+const POLAROID_CORNER_RADIUS = 3
+
+function drawPolaroidCard(ctx, { x, y, width, height, rotation, skewX, flapHeight, date, logo }) {
   ctx.save()
   ctx.translate(x + width / 2, y + height / 2)
   ctx.rotate((rotation * Math.PI) / 180)
@@ -115,30 +121,37 @@ function drawPolaroidCard(ctx, { x, y, width, height, rotation, skewX, date, log
   ctx.shadowBlur = 11
   ctx.shadowOffsetY = 10
   ctx.fillStyle = '#fafaf7'
-  ctx.fillRect(-width / 2, -height / 2, width, height)
+  ctx.beginPath()
+  ctx.roundRect(-width / 2, -height / 2, width, height, POLAROID_CORNER_RADIUS)
+  ctx.fill()
   ctx.shadowColor = 'transparent'
   ctx.fillStyle = '#d9d9d6'
-  ctx.fillRect(width / 2 - 70, -height / 2 + 12, 2, height - 24)
+  ctx.fillRect(width / 2 - 70, -height / 2 + 12, 2, flapHeight)
   ctx.translate(width / 2 - 42, 0)
   ctx.rotate(-Math.PI / 2)
   drawLabel(ctx, date || logo, 0, -7, 13, 'center', logo ? '#2675ff' : '#000')
   ctx.restore()
 }
 
-function drawPolaroidBorder(ctx, { x, y, width, height, rotation, skewX, date, logo }) {
+function drawPolaroidBorder(ctx, { x, y, width, height, rotation, skewX, flapHeight, date, logo }) {
   ctx.save()
   ctx.translate(x + width / 2, y + height / 2)
   ctx.rotate((rotation * Math.PI) / 180)
   ctx.transform(1, 0, Math.tan((skewX * Math.PI) / 180), 1, 0, 0)
-  ctx.fillStyle = '#fafaf7'
   const left = -width / 2
   const top = -height / 2
+  // Clip to the card's own rounded outline so the 4 border strips below
+  // don't square off the corners the card background already rounded.
+  ctx.beginPath()
+  ctx.roundRect(left, top, width, height, POLAROID_CORNER_RADIUS)
+  ctx.clip()
+  ctx.fillStyle = '#fafaf7'
   ctx.fillRect(left, top, width, 18)
   ctx.fillRect(left, top + height - 19, width, 19)
   ctx.fillRect(left, top, 18, height)
   ctx.fillRect(left + width - 76, top, 76, height)
   ctx.fillStyle = '#d9d9d6'
-  ctx.fillRect(left + width - 70, top + 12, 2, height - 24)
+  ctx.fillRect(left + width - 70, top + 12, 2, flapHeight)
   ctx.translate(width / 2 - 42, 0)
   ctx.rotate(-Math.PI / 2)
   drawLabel(ctx, date || logo, 0, -7, 13, 'center', logo ? '#2675ff' : '#000')
@@ -146,27 +159,43 @@ function drawPolaroidBorder(ctx, { x, y, width, height, rotation, skewX, date, l
 }
 
 function drawPolaroid(ctx) {
-  drawPolaroidCard(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, date: '2026.09.22' })
-  drawPolaroidCard(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, logo: 'LIKELION SKU' })
+  drawPolaroidCard(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, flapHeight: 261.784, date: '2026.09.22' })
+  drawPolaroidCard(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, flapHeight: 266.808, logo: 'LIKELION SKU' })
 }
 
 function drawFilm(ctx) {
   ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, 420, 560)
-  drawGlow(ctx, 0, 0, 150, 'rgba(255,55,82,.95)')
-  drawGlow(ctx, 420, 0, 150, 'rgba(31,80,255,.75)')
-  drawGlow(ctx, 0, 560, 150, 'rgba(0,124,67,.68)')
-  drawGlow(ctx, 420, 330, 150, 'rgba(255,193,38,.76)')
+  const glowRadius = 0.27 * Math.hypot(420, 560)
+  drawGlow(ctx, 0, 0, glowRadius, 'rgba(255,55,82,.95)')
+  drawGlow(ctx, 420, 0, glowRadius, 'rgba(31,80,255,.75)')
+  drawGlow(ctx, 0, 560, glowRadius, 'rgba(0,124,67,.68)')
+  drawGlow(ctx, 420, 560, glowRadius, 'rgba(255,193,38,.76)')
   drawLabel(ctx, 'STORY OF YOUR FILM', 16, 15, 10)
   drawLabel(ctx, '▶ ▶  45', 404, 15, 10, 'right')
   drawLabel(ctx, 'LIKELION SKU', 210, 532, 10, 'center')
   drawLabel(ctx, '▶ ▶  45', 404, 535, 10, 'right')
 }
 
+// Pre-capture preview is CSS, which stays crisp at any size. The composed
+// photo is a raster, so it needs extra pixel density to look as sharp once
+// displayed at the same size as that preview. The polaroid frame's photos
+// are drawn through a rotate+skew transform (unlike photomatic/film, which
+// are axis-aligned), and that resampling softens detail more than a plain
+// scale-up does - so it needs the most headroom.
+// Read lazily (not at module scope) so importing this file under a
+// non-browser test runner (no `window`) doesn't crash.
+function getRenderScale() {
+  return Math.min(window.devicePixelRatio || 1, 2) * 3
+}
+
 export function composeFrame(canvas, frame, images) {
-  canvas.width = frame.width
-  canvas.height = frame.height
+  const RENDER_SCALE = getRenderScale()
+  canvas.width = frame.width * RENDER_SCALE
+  canvas.height = frame.height * RENDER_SCALE
   const ctx = canvas.getContext('2d')
+  ctx.scale(RENDER_SCALE, RENDER_SCALE)
+  ctx.imageSmoothingQuality = 'high'
 
   if (frame.key === 'photomatic') drawPhotomatic(ctx)
   if (frame.key === 'polaroid') drawPolaroid(ctx)
@@ -181,7 +210,59 @@ export function composeFrame(canvas, frame, images) {
 
   return frame.key === 'polaroid'
     ? canvas.toDataURL('image/png')
-    : canvas.toDataURL('image/jpeg', 0.85)
+    : canvas.toDataURL('image/jpeg', 0.95)
+}
+
+/** 백엔드 업로드 상한(PhotoService.MAX_BYTES, 1MB)에 맞춰 필요할 때만
+ * 재압축함. composeFrame()의 RENDER_SCALE이 화면 미리보기용으로 이미
+ * 고해상도라, 특히 아이패드처럼 devicePixelRatio가 높은 기기에서는
+ * 원본이 상한을 몇 배씩 넘길 수 있음 - JPEG는 품질을 낮춰서, PNG(폴라로이드,
+ * 알파 채널 유지 필요)는 해상도를 줄여서 목표 용량 안에 맞춤. */
+export async function compressForUpload(dataUrl, maxBytes = 950 * 1024) {
+  const isPng = dataUrl.startsWith('data:image/png')
+
+  const image = new Image()
+  const loaded = new Promise((resolve, reject) => {
+    image.onload = resolve
+    image.onerror = () => reject(new Error('이미지를 불러오지 못했습니다'))
+  })
+  image.src = dataUrl
+  await loaded
+
+  const toBlob = (scale, quality) =>
+    new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(resolve, isPng ? 'image/png' : 'image/jpeg', isPng ? undefined : quality)
+    })
+
+  let scale = 1
+  let quality = 0.92
+  let lastBlob = null
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    lastBlob = await toBlob(scale, quality)
+    if (lastBlob && lastBlob.size <= maxBytes) return lastBlob
+
+    // PNG has no quality dial - only resolution helps. JPEG tries quality
+    // first (keeps full resolution longer) and falls back to resolution
+    // once quality bottoms out. Either way, jump straight toward the scale
+    // that SHOULD hit the target from the size just measured (file size
+    // roughly tracks pixel count) instead of always nibbling a fixed 15%
+    // off - a polaroid PNG starting several MB over target (devicePixelRatio
+    // 2 iPads routinely produce 8-9MB originals) needed more than the fixed
+    // step could deliver within a bounded attempt count.
+    if (isPng || quality <= 0.5) {
+      const ratio = maxBytes / lastBlob.size
+      scale *= Math.min(0.85, Math.sqrt(ratio) * 0.9)
+    } else {
+      quality -= 0.12
+    }
+  }
+
+  return lastBlob
 }
 
 function drawPhotomaticOverlay(ctx) {
@@ -194,8 +275,8 @@ function drawPhotomaticOverlay(ctx) {
 }
 
 function drawPolaroidOverlay(ctx) {
-  drawPolaroidBorder(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, date: '2026.09.22' })
-  drawPolaroidBorder(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, logo: 'LIKELION SKU' })
+  drawPolaroidBorder(ctx, { x: 44.6755, y: 58.1955, width: 480.837, height: 298.252, rotation: 6.88, skewX: 1.66, flapHeight: 261.784, date: '2026.09.22' })
+  drawPolaroidBorder(ctx, { x: 53.297, y: 366.574, width: 480.373, height: 298.472, rotation: -4.59, skewX: -1.11, flapHeight: 266.808, logo: 'LIKELION SKU' })
 }
 
 function drawFilmOverlay(ctx) {
