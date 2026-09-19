@@ -242,15 +242,21 @@ export async function compressForUpload(dataUrl, maxBytes = 950 * 1024) {
   let quality = 0.92
   let lastBlob = null
 
-  for (let attempt = 0; attempt < 8; attempt++) {
+  for (let attempt = 0; attempt < 12; attempt++) {
     lastBlob = await toBlob(scale, quality)
     if (lastBlob && lastBlob.size <= maxBytes) return lastBlob
 
     // PNG has no quality dial - only resolution helps. JPEG tries quality
     // first (keeps full resolution longer) and falls back to resolution
-    // once quality bottoms out.
+    // once quality bottoms out. Either way, jump straight toward the scale
+    // that SHOULD hit the target from the size just measured (file size
+    // roughly tracks pixel count) instead of always nibbling a fixed 15%
+    // off - a polaroid PNG starting several MB over target (devicePixelRatio
+    // 2 iPads routinely produce 8-9MB originals) needed more than the fixed
+    // step could deliver within a bounded attempt count.
     if (isPng || quality <= 0.5) {
-      scale *= 0.85
+      const ratio = maxBytes / lastBlob.size
+      scale *= Math.min(0.85, Math.sqrt(ratio) * 0.9)
     } else {
       quality -= 0.12
     }

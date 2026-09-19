@@ -11,8 +11,10 @@ import { CAMERA_FRAMES, compressForUpload, composeFrame, drawCover, getCameraFra
 /** compressForUpload()가 쓰는 Image/document.createElement('canvas')를
  * 브라우저 없이 흉내냄. 실제 인코더 대신 "픽셀 수 x 품질"에 비례하는
  * 가짜 파일 크기를 계산해서, 반복 압축 로직이 정말 목표 용량 아래로
- * 수렴하는지 확인한다. */
-function stubImageAndCanvas({ naturalWidth, naturalHeight, bytesAtFullSize }) {
+ * 수렴하는지 확인한다. pixelExponent를 1보다 작게 주면(기본 1 = 순수
+ * 면적 비례) 실제 노이즈 있는 사진처럼 "해상도를 줄여도 생각만큼
+ * 안 줄어드는" 압축 상황을 흉내낼 수 있다. */
+function stubImageAndCanvas({ naturalWidth, naturalHeight, bytesAtFullSize, pixelExponent = 1 }) {
   class FakeImage {
     set src(value) {
       this._src = value
@@ -31,7 +33,7 @@ function stubImageAndCanvas({ naturalWidth, naturalHeight, bytesAtFullSize }) {
         toBlob(callback, type, quality) {
           const pixelRatio = (canvas.width * canvas.height) / (naturalWidth * naturalHeight)
           const qualityRatio = type === 'image/png' ? 1 : quality
-          callback({ size: Math.round(bytesAtFullSize * pixelRatio * qualityRatio) })
+          callback({ size: Math.round(bytesAtFullSize * pixelRatio ** pixelExponent * qualityRatio) })
         },
       }
       return canvas
@@ -188,6 +190,23 @@ test('폴라로이드(PNG)는 품질 조절이 안 되니 해상도를 줄여서
   const blob = await compressForUpload('data:image/png;base64,x', 950 * 1024)
 
   assert.ok(blob.size <= 950 * 1024, `상한을 넘김: ${blob.size}`)
+})
+
+test('원본이 목표의 9배(아이패드 devicePixelRatio 2 폴라로이드 실측치)여도 상한 이내로 맞춘다', async () => {
+  // PR #79 리뷰에서 실제로 재현된 값: 3600x4020 PNG, 8,691KB 원본이
+  // 8번 시도(고정 0.85배씩) 후에도 1,401KB로 상한을 못 넘긴 사례.
+  // pixelExponent 0.7 = 해상도를 줄여도 노이즈 때문에 생각만큼 안 줄어드는
+  // 실제 압축 상황을 흉내냄 (순수 면적 비례보다 불리한 조건)
+  stubImageAndCanvas({
+    naturalWidth: 3600,
+    naturalHeight: 4020,
+    bytesAtFullSize: 8691 * 1024,
+    pixelExponent: 0.7,
+  })
+
+  const blob = await compressForUpload('data:image/png;base64,x', 950 * 1024)
+
+  assert.ok(blob.size <= 950 * 1024, `상한을 넘김: ${blob.size} bytes`)
 })
 
 test('8번 시도로도 상한을 못 맞추면 마지막 결과라도 반환한다(무한 루프 방지)', async () => {
