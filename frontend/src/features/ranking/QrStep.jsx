@@ -72,7 +72,7 @@ export default function QrStep({ photo, onHome }) {
   return (
     <div className="qr__screen">
       <h1 className="qr__title">큐알코드를 스캔하고 사진을 받아가세요!</h1>
-      <p className="qr__subtitle">카메라로 큐알코드를 비추면 사진을 다운로드할 수 있어요</p>
+      <p className="qr__subtitle">어흥~사진 챙기는거 잊지 마세요!</p>
 
       <div className="qr__card">
         {phase === 'uploading' && <p className="qr__placeholder">사진을 올리는 중이에요...</p>}
