@@ -1,7 +1,43 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { CAMERA_FRAMES, composeFrame, drawCover, getCameraFrame } from './cameraFrames.js'
+// composeFrame() reads window.devicePixelRatio (lazily, at call time) to
+// pick a render scale - stub it so the Node test runner (no real `window`)
+// can call composeFrame() directly.
+globalThis.window ??= { devicePixelRatio: 1 }
+
+import { CAMERA_FRAMES, compressForUpload, composeFrame, drawCover, getCameraFrame } from './cameraFrames.js'
+
+/** compressForUpload()가 쓰는 Image/document.createElement('canvas')를
+ * 브라우저 없이 흉내냄. 실제 인코더 대신 "픽셀 수 x 품질"에 비례하는
+ * 가짜 파일 크기를 계산해서, 반복 압축 로직이 정말 목표 용량 아래로
+ * 수렴하는지 확인한다. */
+function stubImageAndCanvas({ naturalWidth, naturalHeight, bytesAtFullSize }) {
+  class FakeImage {
+    set src(value) {
+      this._src = value
+      queueMicrotask(() => this.onload?.())
+    }
+    get naturalWidth() { return naturalWidth }
+    get naturalHeight() { return naturalHeight }
+  }
+  globalThis.Image = FakeImage
+  globalThis.document = {
+    createElement: () => {
+      const canvas = {
+        width: 0,
+        height: 0,
+        getContext: () => ({ drawImage() {} }),
+        toBlob(callback, type, quality) {
+          const pixelRatio = (canvas.width * canvas.height) / (naturalWidth * naturalHeight)
+          const qualityRatio = type === 'image/png' ? 1 : quality
+          callback({ size: Math.round(bytesAtFullSize * pixelRatio * qualityRatio) })
+        },
+      }
+      return canvas
+    },
+  }
+}
 
 test('새 Figma 프레임 3종만 제공한다', () => {
   assert.deepEqual(CAMERA_FRAMES.map(({ key }) => key), ['photomatic', 'polaroid', 'film'])
@@ -77,7 +113,7 @@ test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만�
   const draws = []
   const gradient = { addColorStop() {} }
   const ctx = {
-    save() {}, restore() {}, translate() {}, rotate() {},
+    save() {}, restore() {}, translate() {}, rotate() {}, scale() {},
     fillRect() {}, fillText() {},
     createRadialGradient() { return gradient },
     drawImage(image) { draws.push(image) },
@@ -86,7 +122,7 @@ test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만�
     getContext: () => ctx,
     toDataURL(type, quality) {
       assert.equal(type, 'image/jpeg')
-      assert.equal(quality, 0.85)
+      assert.equal(quality, 0.95)
       return 'data:image/jpeg;base64,result'
     },
   }
@@ -103,7 +139,8 @@ test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만
   const gradient = { addColorStop() {} }
   const ctx = {
     fillStyle: '',
-    save() {}, restore() {}, translate() {}, rotate() {}, transform() {},
+    save() {}, restore() {}, translate() {}, rotate() {}, transform() {}, scale() {},
+    beginPath() {}, roundRect() {}, fill() {}, clip() {},
     fillRect(...args) { fills.push({ color: this.fillStyle, args }) },
     fillText() {}, drawImage() {},
     createRadialGradient() { return gradient },
@@ -123,4 +160,41 @@ test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만
 
   assert.equal(result, 'data:image/png;base64,result')
   assert.equal(fills.some(({ color, args }) => color === '#202020' && args.join(',') === '0,0,600,670'), false)
+})
+
+test('업로드 용량이 이미 상한 이내면 첫 시도(해상도 100%) 그대로 반환한다', async () => {
+  stubImageAndCanvas({ naturalWidth: 1000, naturalHeight: 1000, bytesAtFullSize: 500 * 1024 })
+
+  const blob = await compressForUpload('data:image/jpeg;base64,x', 950 * 1024)
+
+  // 첫 시도는 항상 원본 해상도(scale=1)로 인코딩함 - 품질(0.92)만 적용된
+  // 크기라 원본의 정확히 100%는 아니지만, 상한 이내이므로 더 줄이지 않아야 함
+  assert.ok(blob.size <= 950 * 1024)
+  assert.ok(blob.size > 400 * 1024, `해상도까지 줄어든 것으로 보임: ${blob.size}`)
+})
+
+test('JPEG는 해상도를 유지한 채 품질부터 낮춰서 상한 이내로 맞춘다', async () => {
+  // 최초(품질 0.92) 시도는 950KB 상한을 넘고, 품질을 몇 단계 낮추면 맞음
+  stubImageAndCanvas({ naturalWidth: 1000, naturalHeight: 1000, bytesAtFullSize: 1200 * 1024 })
+
+  const blob = await compressForUpload('data:image/jpeg;base64,x', 950 * 1024)
+
+  assert.ok(blob.size <= 950 * 1024, `상한을 넘김: ${blob.size}`)
+})
+
+test('폴라로이드(PNG)는 품질 조절이 안 되니 해상도를 줄여서 상한 이내로 맞춘다', async () => {
+  stubImageAndCanvas({ naturalWidth: 2000, naturalHeight: 2000, bytesAtFullSize: 3000 * 1024 })
+
+  const blob = await compressForUpload('data:image/png;base64,x', 950 * 1024)
+
+  assert.ok(blob.size <= 950 * 1024, `상한을 넘김: ${blob.size}`)
+})
+
+test('8번 시도로도 상한을 못 맞추면 마지막 결과라도 반환한다(무한 루프 방지)', async () => {
+  // bytesAtFullSize를 상한보다 압도적으로 크게 잡아 8번 반복 안에 못 맞추게 함
+  stubImageAndCanvas({ naturalWidth: 1000, naturalHeight: 1000, bytesAtFullSize: 100 * 1024 * 1024 })
+
+  const blob = await compressForUpload('data:image/jpeg;base64,x', 950 * 1024)
+
+  assert.ok(blob, '마지막 시도 결과가 반환되어야 함(undefined/null 아님)')
 })

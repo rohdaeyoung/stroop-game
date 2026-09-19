@@ -56,7 +56,6 @@ test('정상 촬영 상태에는 건너뛰기 버튼을 표시하지 않는다',
 
 test('최종 JPEG만 기존 다음 단계로 전달한다', () => {
   assert.match(cameraSource, /onNext\(photo\)/)
-  assert.match(cameraSource, /촬영한 사진은 결과 화면과 함께 저장돼요/)
 })
 
 test('촬영 전후 프레임 비율과 크기를 동일하게 유지한다', () => {
@@ -82,8 +81,9 @@ test('완성 사진은 선택 영역까지만 왼쪽으로 이동하고 사자�
   assert.match(rankingCss, /--captured-shift-x:/)
   const capturedPhotoRule = rankingCss.match(/\.camera__screen--captured \.camera__polaroid\s*\{[^}]*\}/s)?.[0] ?? ''
   assert.match(capturedPhotoRule, /animation:\s*none/)
-  assert.match(capturedPhotoRule, /translateX\(calc\(-1 \* var\(--captured-shift-x\)\)\)/)
-  assert.match(rankingCss, /\.camera__screen--captured \.camera__frame-selector\s*\{[^}]*translateX\(-/s)
+  assert.match(capturedPhotoRule, /translate\(calc\(-1 \* var\(--captured-shift-x\)\), 0px\)/)
+  // 선택 칸은 우측 세로 사이드바로 옮겨가서, 촬영 완료 시 더 오른쪽으로(양수) 밀려 사라진다
+  assert.match(rankingCss, /\.camera__screen--captured \.camera__frame-selector\s*\{[^}]*translateX\(260px\)/s)
   assert.match(rankingCss, /\.camera__celebration/)
 })
 
@@ -92,9 +92,11 @@ test('완료 버튼은 화면 중앙에 그대로 유지한다', () => {
 })
 
 test('사자는 빈 오른쪽 영역 중앙에 있고 손은 얼굴 가까이 내려온다', () => {
-  const celebrationRule = rankingCss.match(/\.camera__celebration\s*\{[^}]*\}/s)?.[0] ?? ''
+  // 프레임마다 사진 폭이 달라서 사자 위치를 프레임별로 다르게 잡아야 함 -
+  // 고정 CSS left 하나가 아니라 프레임 타입별 맵을 JS에서 인라인으로 넣어줌
+  assert.match(cameraSource, /const CAPTURED_CELEBRATION_LEFT = \{ photomatic: \d+, polaroid: \d+, film: \d+ \}/)
+  assert.match(cameraSource, /CAPTURED_CELEBRATION_LEFT\[frame\]/)
   const handsRule = rankingCss.match(/\.camera__celebration-hands\s*\{[^}]*\}/s)?.[0] ?? ''
-  assert.match(celebrationRule, /left:\s*1060px/)
   assert.match(handsRule, /top:\s*92px/)
 })
 
@@ -110,10 +112,10 @@ test('사진과 프레임 선택칸은 같은 속도로 왼쪽 이동한다', ()
   assert.match(rankingCss, /transition-delay:\s*0s, 0s, 0\.65s/)
 })
 
-test('촬영 완료 버튼은 중앙에서 85px 위로 이동한다', () => {
-  const actionsRule = rankingCss.match(/\.camera__screen--captured \.camera__actions\s*\{[^}]*\}/s)?.[0] ?? ''
-  assert.match(actionsRule, /transform:\s*translateY\(-85px\)/)
-  assert.doesNotMatch(actionsRule, /translateX/)
+test('촬영 완료 버튼은 촬영 전후 항상 화면 중앙에 그대로 있다', () => {
+  // 버튼 줄은 프레임/사자와 달리 촬영 완료 시에도 위치를 옮기지 않음 -
+  // captured 전용 오버라이드 규칙 자체가 없어야 함
+  assert.doesNotMatch(rankingCss, /\.camera__screen--captured \.camera__actions\s*\{/)
 })
 
 test('주요 버튼은 누를 때 흰색 글로우와 눌림 피드백을 준다', () => {
@@ -125,13 +127,12 @@ test('주요 버튼은 누를 때 흰색 글로우와 눌림 피드백을 준다
 
 test('사자는 사진 이동이 거의 끝난 뒤 짧은 거리에서 등장한다', () => {
   const rule = rankingCss.match(/\.camera__celebration\s*\{[^}]*\}/s)?.[0] ?? ''
-  assert.match(rule, /top:\s*210px/)
+  assert.match(rule, /top:\s*250px/)
   assert.match(rule, /translateX\(30px\)/)
   assert.match(rule, /0\.65s 0\.52s/)
 })
 
-test('완료 버튼과 손 흔들기 배치를 영상 기준으로 정돈한다', () => {
-  assert.match(rankingCss, /\.camera__screen--captured \.camera__actions\s*\{[^}]*translateY\(-85px\)/s)
+test('손 흔들기 애니메이션은 3도씩 좌우로 흔든다', () => {
   assert.match(rankingCss, /camera-hands-wave 1\.1s/)
   assert.match(rankingCss, /rotate\(-3deg\) translateY\(3px\)/)
   assert.match(rankingCss, /rotate\(3deg\) translateY\(-3px\)/)

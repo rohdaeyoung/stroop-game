@@ -832,12 +832,6 @@
   box-shadow: none;
 }
 
-.camera__hint {
-  margin: 0;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
 /* ── 10 QR 코드 발송 */
 .qr__title {
   /* matches the captured-photo screen's header (.camera__screen--captured

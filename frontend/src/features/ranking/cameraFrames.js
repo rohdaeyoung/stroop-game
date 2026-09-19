@@ -183,9 +183,14 @@ function drawFilm(ctx) {
 // are drawn through a rotate+skew transform (unlike photomatic/film, which
 // are axis-aligned), and that resampling softens detail more than a plain
 // scale-up does - so it needs the most headroom.
-const RENDER_SCALE = Math.min(window.devicePixelRatio || 1, 2) * 3
+// Read lazily (not at module scope) so importing this file under a
+// non-browser test runner (no `window`) doesn't crash.
+function getRenderScale() {
+  return Math.min(window.devicePixelRatio || 1, 2) * 3
+}
 
 export function composeFrame(canvas, frame, images) {
+  const RENDER_SCALE = getRenderScale()
   canvas.width = frame.width * RENDER_SCALE
   canvas.height = frame.height * RENDER_SCALE
   const ctx = canvas.getContext('2d')
@@ -206,6 +211,52 @@ export function composeFrame(canvas, frame, images) {
   return frame.key === 'polaroid'
     ? canvas.toDataURL('image/png')
     : canvas.toDataURL('image/jpeg', 0.95)
+}
+
+/** 백엔드 업로드 상한(PhotoService.MAX_BYTES, 1MB)에 맞춰 필요할 때만
+ * 재압축함. composeFrame()의 RENDER_SCALE이 화면 미리보기용으로 이미
+ * 고해상도라, 특히 아이패드처럼 devicePixelRatio가 높은 기기에서는
+ * 원본이 상한을 몇 배씩 넘길 수 있음 - JPEG는 품질을 낮춰서, PNG(폴라로이드,
+ * 알파 채널 유지 필요)는 해상도를 줄여서 목표 용량 안에 맞춤. */
+export async function compressForUpload(dataUrl, maxBytes = 950 * 1024) {
+  const isPng = dataUrl.startsWith('data:image/png')
+
+  const image = new Image()
+  const loaded = new Promise((resolve, reject) => {
+    image.onload = resolve
+    image.onerror = () => reject(new Error('이미지를 불러오지 못했습니다'))
+  })
+  image.src = dataUrl
+  await loaded
+
+  const toBlob = (scale, quality) =>
+    new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(resolve, isPng ? 'image/png' : 'image/jpeg', isPng ? undefined : quality)
+    })
+
+  let scale = 1
+  let quality = 0.92
+  let lastBlob = null
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    lastBlob = await toBlob(scale, quality)
+    if (lastBlob && lastBlob.size <= maxBytes) return lastBlob
+
+    // PNG has no quality dial - only resolution helps. JPEG tries quality
+    // first (keeps full resolution longer) and falls back to resolution
+    // once quality bottoms out.
+    if (isPng || quality <= 0.5) {
+      scale *= 0.85
+    } else {
+      quality -= 0.12
+    }
+  }
+
+  return lastBlob
 }
 
 function drawPhotomaticOverlay(ctx) {

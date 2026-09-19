@@ -6,6 +6,10 @@
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { api, apiOrigin, getApiErrorMessage } from '../../shared/api/client.js'
+import { compressForUpload } from './cameraFrames.js'
+
+/** Spring 기본 업로드 상한(1MB)보다 살짝 낮게 잡은 안전 목표치 - PhotoService.MAX_BYTES 참고 */
+const MAX_UPLOAD_BYTES = 950 * 1024
 
 /** 남은 시간을 "4:37" 형태로 */
 function formatRemain(seconds) {
@@ -32,9 +36,12 @@ export default function QrStep({ photo, onHome }) {
       }
 
       try {
-        // dataURL → Blob (서버는 multipart 로 받습니다)
+        // dataURL → Blob (서버는 multipart 로 받습니다). 미리보기 화질을 위해
+        // 크게 합성된 원본이 서버 업로드 상한(1MB)을 넘을 수 있어서, 넘을
+        // 때만 업로드용으로 재압축합니다 - 화면에 보여준 photo 자체는 그대로 둡니다.
         const blob = await (await fetch(photo)).blob()
-        const res = await api.uploadPhoto(blob)
+        const uploadBlob = blob.size > MAX_UPLOAD_BYTES ? await compressForUpload(photo, MAX_UPLOAD_BYTES) : blob
+        const res = await api.uploadPhoto(uploadBlob)
         if (cancelled) return
 
         const url = `${apiOrigin()}/photos/${res.token}`
