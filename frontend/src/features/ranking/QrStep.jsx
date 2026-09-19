@@ -44,7 +44,10 @@ export default function QrStep({ photo, onHome }) {
         const res = await api.uploadPhoto(uploadBlob)
         if (cancelled) return
 
-        const url = `${apiOrigin()}/photos/${res.token}`
+        // /photos/{token} 은 이미지 파일 자체라 QR 을 스캔하면 사진 한 장만 덩그러니 떴다.
+        // /photos/{token}/view 는 백엔드가 그 사진을 감싸서 보여주는 HTML 화면
+        // ("사진 저장하기" 버튼 + 남은 보관 시간 카운트다운, docs/API.md 4-3 참고).
+        const url = `${apiOrigin()}/photos/${res.token}/view`
         await QRCode.toCanvas(canvasRef.current, url, {
           width: 320,
           margin: 1,
