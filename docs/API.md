@@ -109,13 +109,23 @@ Base URL: `http://localhost:8080` (로컬) / 배포 주소는 README 배포 계�
 
 ### 4-2. 사진 받기
 
-`GET /api/photos/{token}` — 참가자 휴대폰이 QR 로 여는 주소
+`GET /api/photos/{token}` — 이미지 파일 자체. `4-3` 화면의 `<img>` src 로 쓰입니다
 
 **Response** `200 OK` — 이미지 파일 (`image/jpeg` 또는 `image/png`)
 - 휴대폰 브라우저에서 사진이 바로 열리고, 길게 눌러 저장할 수 있습니다 (`inline`)
 - 브라우저·중간 캐시에 남기지 않습니다 (`Cache-Control: no-store`)
 - 5분 안에는 여러 번 받을 수 있습니다
 - 만료됐거나 없는 토큰이면 `404 PHOTO_NOT_FOUND`
+
+### 4-3. QR 로 여는 화면
+
+`GET /api/photos/{token}/view` — **QR 에는 이 주소를 넣으세요** (이미지 파일이 아니라 이 화면 주소입니다)
+
+**Response** `200 OK` — `text/html`. 프론트 없이 백엔드가 바로 렌더링하는 화면으로, 사진(`4-2`
+주소를 `<img>` src 로 사용) · "사진 저장하기" 버튼 · 남은 보관 시간 카운트다운을 보여줍니다.
+프론트 테마(`design/tokens/tokens.css`, `features/ranking/Ranking.css`)에 맞춰 색·폰트를 맞췄습니다.
+
+만료됐거나 없는 토큰이면 `404` 와 함께 "보관 시간이 끝났어요" 안내 화면을 돌려줍니다 (JSON 에러 아님).
 
 ---
 
