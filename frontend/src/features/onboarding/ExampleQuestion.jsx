@@ -116,7 +116,7 @@ export default function ExampleQuestion({ isLeaving, onAdvance }) {
         </div>
 
         <div className="onboarding__example-choices">
-          {[STROOP_COLORS[0], STROOP_COLORS[1], STROOP_COLORS[3], STROOP_COLORS[2]].map((color) => {
+          {[STROOP_COLORS[0], STROOP_COLORS[1], STROOP_COLORS[2], STROOP_COLORS[3]].map((color) => {
             const isPicked = picked?.key === color.key
             const isAnswer = picked && color.key === INK_COLOR.key
             return (
