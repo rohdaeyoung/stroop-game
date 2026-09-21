@@ -11,6 +11,11 @@ const TOTAL_PLAY_MS = 30_000
 // BE 의 ScoreRules.MAX_PLAY_TIME_MS 와 같은 값을 유지합니다. (30초 + 여유 10초)
 const MAX_SERVER_PLAY_TIME_MS = 40_000
 
+// 문제가 바뀔 때마다 "이번 문제는 색/뜻이에요!" 인트로를 잠깐 보여주는 시간입니다
+// (Figma 05_플레이 — 모드강조 시안3). 단어·색이 헷갈린다는 피드백 때문에 추가했습니다.
+// 이 시간 동안은 제한시간 카운트다운이 멈춰있어서, 참가자가 손해를 보지 않습니다.
+const MODE_INTRO_MS = 650
+
 /** 남은 밀리초를 0:24 형태로 */
 function formatTime(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -34,6 +39,9 @@ export function useStroopGame({ onGameOver }) {
   const difficulty = getDifficulty(correctCount)
   const [quiz, setQuiz] = useState(() => createQuiz(difficulty.choiceCount))
   const [timeLeft, setTimeLeft] = useState(difficulty.limitMs)
+  // 'intro' = 모드 안내 시트가 떠 있는 중 (아직 문제 안 보임)
+  // 'question' = 단어 + 선택지가 보이고 실제로 답을 고를 수 있는 중
+  const [phase, setPhase] = useState('intro')
 
   // HUD 의 전체 시간 게이지용. 화면 표시 전용이라 게임 판정에는 쓰지 않습니다.
   const [totalLeftMs, setTotalLeftMs] = useState(TOTAL_PLAY_MS)
@@ -76,8 +84,10 @@ export function useStroopGame({ onGameOver }) {
     const next = getDifficulty(nextCorrectCount)
     setQuiz(createQuiz(next.choiceCount))
     setTimeLeft(next.limitMs)
-    questionStartedAt.current = Date.now()
+    setPhase('intro')
     answeredRef.current = false
+    // questionStartedAt 은 인트로가 끝나는 시점(아래 effect)에 찍습니다 —
+    // 여기서 바로 찍으면 인트로가 떠 있는 동안 제한시간이 같이 줄어듭니다.
   }, [])
 
   /**
@@ -123,7 +133,7 @@ export function useStroopGame({ onGameOver }) {
   }, [endGame, nextQuestion])
 
   const answer = useCallback((choiceKey) => {
-    if (endedRef.current || answeredRef.current) return
+    if (endedRef.current || answeredRef.current || phase !== 'question') return
 
     const now = Date.now()
     const totalElapsed = now - startedAt.current
@@ -206,18 +216,27 @@ export function useStroopGame({ onGameOver }) {
         nextQuestion(correctCountRef.current)
       }
     }
-  }, [quiz, difficulty, endGame, nextQuestion])
+  }, [quiz, difficulty, phase, endGame, nextQuestion])
 
-
-  // 문제별 카운트다운
+  // 모드 인트로 → 실제 문제 전환. 인트로가 끝나야 제한시간이 흐르기 시작합니다.
   useEffect(() => {
+    const id = setTimeout(() => {
+      questionStartedAt.current = Date.now()
+      setPhase('question')
+    }, MODE_INTRO_MS)
+    return () => clearTimeout(id)
+  }, [quiz])
+
+  // 문제별 카운트다운 (인트로가 떠 있는 동안에는 멈춰 있습니다)
+  useEffect(() => {
+    if (phase !== 'question') return
     if (timeLeft <= 0) {
       missQuestion()
       return
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 100), 100)
     return () => clearTimeout(id)
-  }, [timeLeft, quiz, missQuestion])
+  }, [timeLeft, quiz, phase, missQuestion])
 
   // 종료 조건: 목숨 소진
   useEffect(() => {
@@ -238,9 +257,14 @@ export function useStroopGame({ onGameOver }) {
     return () => clearInterval(id)
   }, [])
 
+  const isColorMode = quiz.mode === MODE.COLOR
+
   return {
     score, combo, lives, quiz, answer,
     lastGain, lastMiss,
+    /** 'intro' = 모드 안내 시트, 'question' = 실제 문제 (선택지 클릭 가능) */
+    phase,
+    isColorMode,
     timeRatio: Math.max(0, timeLeft / difficulty.limitMs),
     questionText:
       quiz.mode === MODE.COLOR ? '글자의 색을 고르세요' : '단어의 뜻을 고르세요',

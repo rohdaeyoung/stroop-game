@@ -68,15 +68,18 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* ── 중앙 상단: 모드 + 질문 + 문제 번호 */}
-          <div className="game__head">
-            <p className="game__question">
-              <span className="game__mode-tag">{game.modeLabel}</span>
-              {game.questionText}
-            </p>
-            <h1 className="game__counter">{game.questionNumber}번째 문제</h1>
-            <p className="game__hint">째깍째깍 시간이 가고 있어요!</p>
-          </div>
+          {/* ── 중앙 상단: 모드 + 질문 + 문제 번호 (모드 인트로가 떠 있는 동안은 숨깁니다 —
+              Figma 05_플레이 — 모드강조 시안3 에서도 인트로 아래 요소들은 hidden 처리돼 있습니다) */}
+          {game.phase === 'question' && (
+            <div className="game__head">
+              <p className="game__question">
+                <span className="game__mode-tag">{game.modeLabel}</span>
+                {game.questionText}
+              </p>
+              <h1 className="game__counter">{game.questionNumber}번째 문제</h1>
+              <p className="game__hint">째깍째깍 시간이 가고 있어요!</p>
+            </div>
+          )}
 
           {/* ── 우상단: 전체 시간 */}
           <div className="game__total-time">
@@ -92,20 +95,37 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* ── 문제별 제한시간 */}
-          <div className="game__timer">
-            <div
-              className="game__timer-bar"
-              style={{ width: `${game.timeRatio * 100}%` }}
-            />
-          </div>
+          {/* ── 모드 인트로: 문제가 바뀔 때마다 잠깐 떠서 "이번 문제는 색/뜻이에요!" 를
+              알려줍니다 (Figma 05_플레이 — 모드강조 시안3, node 420:342/420:395).
+              단어·색 중 뭘 봐야 하는지 헷갈린다는 피드백으로 나연님이 새로 만든 화면입니다. */}
+          {game.phase === 'intro' ? (
+            <div className={`game__mode-intro game__mode-intro--${game.isColorMode ? 'color' : 'word'}`}>
+              <p className="game__mode-intro-watermark">{game.isColorMode ? 'COLOR' : 'Meaning'}</p>
+              <h2 className="game__mode-intro-headline">
+                이번 문제는 <em>{game.isColorMode ? '색' : '뜻'}</em>이에요!
+              </h2>
+              <p className="game__mode-intro-sub">
+                글자의 &quot;{game.isColorMode ? '색' : '뜻'}&quot;을 고르세요
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* ── 문제별 제한시간 */}
+              <div className="game__timer">
+                <div
+                  className="game__timer-bar"
+                  style={{ width: `${game.timeRatio * 100}%` }}
+                />
+              </div>
 
-          {/* ── 단어 카드 */}
-          <div className="game__card">
-            <span className="game__word" style={{ color: game.quiz.inkColor.css }}>
-              {game.quiz.word.label}
-            </span>
-          </div>
+              {/* ── 단어 카드 */}
+              <div className="game__card">
+                <span className="game__word" style={{ color: game.quiz.inkColor.css }}>
+                  {game.quiz.word.label}
+                </span>
+              </div>
+            </>
+          )}
 
           {/* ── 콤보 / 스피드 / 오답 배지 + 마스코트 (Figma 170:155/170:159/170:161,
               마스코트는 170:153/170:154 — 오답 쪽은 같은 애셋을 재사용합니다) */}
@@ -129,18 +149,20 @@ export default function GamePage() {
           )}
 
           {/* ── 선택지 */}
-          <div className="game__choices">
-            {game.quiz.choices.map((choice) => (
-              <button
-                key={choice.key}
-                className="game__choice"
-                style={{ background: choice.css }}
-                onPointerDown={() => game.answer(choice.key)}
-              >
-                {choice.label}
-              </button>
-            ))}
-          </div>
+          {game.phase === 'question' && (
+            <div className="game__choices">
+              {game.quiz.choices.map((choice) => (
+                <button
+                  key={choice.key}
+                  className="game__choice"
+                  style={{ background: choice.css }}
+                  onPointerDown={() => game.answer(choice.key)}
+                >
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
