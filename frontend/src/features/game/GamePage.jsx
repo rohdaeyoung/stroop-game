@@ -4,8 +4,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStroopGame, BADGE_VISIBLE_MS } from './useStroopGame.js'
 import { useKioskScale } from '../../shared/hooks/useKioskScale.js'
+import Glow from '../../design/components/Glow.jsx'
 import mascotHype from './assets/mascot-hype.png'
 import './Game.css'
+
+// 온보딩 대기화면 네 모서리와 같은 색 배치(빨강→파랑→초록→노랑)를 그대로 씁니다.
+const GAME_GLOW_COLORS = ['#ff5363', '#3b7afa', '#2ec770', '#ffc93d']
 
 export default function GamePage() {
   const navigate = useNavigate()
@@ -48,6 +52,8 @@ export default function GamePage() {
         style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
         <div className="game">
+          <Glow colors={GAME_GLOW_COLORS} />
+
           {/* ── 좌상단: 점수 + 목숨 */}
           <div className="game__score-box">
             <div className="game__score">
