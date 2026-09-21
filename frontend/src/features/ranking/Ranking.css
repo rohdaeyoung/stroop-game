@@ -237,6 +237,11 @@
   outline: 3px solid #fff;
   outline-offset: 5px;
 }
+.ranking__cta--ghost {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+}
 
 /* ── 09 인증샷 촬영 (Camera) / 10 QR 코드 발송 (QR) — ranking__screen과 같은 캔버스 위에서 단계 전환 */
 .camera__screen,
