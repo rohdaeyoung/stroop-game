@@ -23,13 +23,9 @@
   position: relative;
   width: 100%;
   height: 100%;
-  /* 네 모서리 색 글로우 — 시안의 배경 분위기 */
-  background:
-    radial-gradient(640px 640px at 0% 0%, rgba(255, 83, 99, 0.22), transparent 70%),
-    radial-gradient(680px 680px at 100% 0%, rgba(59, 122, 250, 0.22), transparent 70%),
-    radial-gradient(560px 560px at 0% 100%, rgba(46, 199, 112, 0.18), transparent 70%),
-    radial-gradient(600px 600px at 100% 100%, rgba(255, 201, 61, 0.18), transparent 70%),
-    #0b0b19;
+  /* 네 모서리 색 글로우는 고정 배경 대신 design/components/Glow 로 띄워서
+     온보딩 대기화면처럼 화면을 돌아다니게 합니다 (GamePage.jsx 참고). */
+  background: #0b0b19;
 }
 
 /* ───── 좌상단: 점수 / 목숨 ───── */
@@ -368,15 +364,40 @@
   justify-content: center;
   text-align: center;
   overflow: hidden;
-  animation: game-mode-intro-in 0.25s ease-out;
+  /* 아래에서 위로 뿅 올라왔다가(약간 오버슈트 후 제자리) 잠깐 머물고 다시 아래로
+     뿅 내려가며 사라집니다. 총 재생 시간은 useStroopGame.js 의 MODE_INTRO_MS(1000ms)
+     와 맞춰야 인트로가 끝나는 순간과 애니메이션이 사라지는 순간이 일치합니다. */
+  animation: game-mode-intro-pop 1s both;
 }
 
 .game__mode-intro--color { background: #ff4759; }
 .game__mode-intro--word { background: #3b7afa; }
 
-@keyframes game-mode-intro-in {
-  0% { opacity: 0; transform: scale(0.97); }
-  100% { opacity: 1; transform: scale(1); }
+@keyframes game-mode-intro-pop {
+  0% {
+    transform: translateY(60%);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  18% {
+    transform: translateY(-3%);
+    opacity: 1;
+    animation-timing-function: ease-out;
+  }
+  26% {
+    transform: translateY(0);
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+  78% {
+    transform: translateY(0);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  100% {
+    transform: translateY(60%);
+    opacity: 0;
+  }
 }
 
 .game__mode-intro-watermark {
