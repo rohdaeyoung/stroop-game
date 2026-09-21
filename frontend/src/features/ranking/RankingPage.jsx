@@ -117,11 +117,11 @@ export default function RankingPage() {
             )}
 
             <div className="ranking__cta-row">
-              <button type="button" className="ranking__cta" onClick={() => navigate('/')}>
-                사진은 괜찮아요! <span aria-hidden="true">→</span>
-              </button>
               <button type="button" className="ranking__cta" onClick={() => setStep('camera')}>
                 어흥샷 찍으러 가기 <span aria-hidden="true">→</span>
+              </button>
+              <button type="button" className="ranking__cta ranking__cta--ghost" onClick={() => navigate('/')}>
+                사진은 괜찮아요! <span aria-hidden="true">→</span>
               </button>
             </div>
           </div>
