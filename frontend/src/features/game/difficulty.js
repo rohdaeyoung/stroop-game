@@ -7,7 +7,7 @@ const TABLE = [
   { from: 30, limitMs: 1400, choiceCount: 4 },
   { from: 20, limitMs: 1800, choiceCount: 4 },
   { from: 10, limitMs: 2400, choiceCount: 4 },
-  { from: 0,  limitMs: 3000, choiceCount: 3 },
+  { from: 0,  limitMs: 3000, choiceCount: 4 },
 ]
 
 export function getDifficulty(correctCount) {
