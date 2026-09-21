@@ -155,14 +155,16 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* ── 선택지 */}
-          {game.phase === 'question' && (
+          {/* ── 선택지 (feedback 단계에서도 방금 고른 선택지가 그대로 보이도록 남겨두고,
+              대신 answeredRef 가드로 이미 막히는 클릭을 disabled 로도 표시합니다) */}
+          {game.phase !== 'intro' && (
             <div className="game__choices">
               {game.quiz.choices.map((choice) => (
                 <button
                   key={choice.key}
                   className="game__choice"
                   style={{ background: choice.css }}
+                  disabled={game.phase !== 'question'}
                   onPointerDown={() => game.answer(choice.key)}
                 >
                   {choice.label}
