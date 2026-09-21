@@ -551,6 +551,11 @@
   font: 700 42px/1 Inter, sans-serif;
 }
 
+/* '호잇' 디자인의 Panel Left/Right(#d9d9d9) — photomatic 프레임에서 아직
+   촬영 전인 슬롯의 배경. 다른 프레임(폴라로이드/필름)은 기존 어두운 배경 유지. */
+.camera__frame-canvas--photomatic .camera__frame-slot { background: #d9d9d9; }
+.camera__frame-canvas--photomatic .camera__slot-waiting { color: rgba(0, 0, 0, .25); }
+
 .camera-art {
   position: absolute;
   inset: 0;
@@ -560,7 +565,14 @@
   font-family: Inter, Arial, sans-serif;
   font-weight: 700;
 }
-.camera-art--photomatic,
+/* '호잇' 디자인(Figma node 452:2) — 타일링된 사자머리 패턴 + 어두운 오버레이 */
+.camera-art--photomatic {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, .22), rgba(0, 0, 0, .22)),
+    url('./assets/lion-pattern-bg.png');
+  background-size: cover;
+  background-position: center;
+}
 .camera-art--film {
   background:
     radial-gradient(circle at 0 0, rgba(255,55,82,.95), transparent 27%),

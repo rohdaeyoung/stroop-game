@@ -63,7 +63,7 @@ function FrameArtwork({ frameKey, compact = false }) {
       <div className={`camera-art camera-art--photomatic${compact ? ' camera-art--compact' : ''}`} aria-hidden="true">
         <span className="camera-art__top camera-art__top--left">TAKE YOUR MEMORY</span>
         <span className="camera-art__top camera-art__top--center">2026.09.22</span>
-        <span className="camera-art__top camera-art__top--right">PHOTOMATIC</span>
+        <span className="camera-art__top camera-art__top--right">LIKELION</span>
         <strong className="camera-art__brand">LIKELION SKU</strong>
       </div>
     )

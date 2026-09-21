@@ -1,3 +1,21 @@
+// '호잇' 디자인(Figma node 452:2)의 배경 패턴. composeFrame()은 동기 함수라
+// 캡처 시점에 로드를 기다릴 수 없으므로, 처음 그릴 때 로드를 시작해두고
+// 이후 호출부터는 캐시된 이미지를 재사용합니다. 촬영은 카운트다운 + 셔터를
+// 거치므로 실제로 그릴 때쯤엔 거의 항상 로드가 끝나 있습니다.
+// new URL(..., import.meta.url) 을 쓰는 이유: 일반 정적 import 는 이 파일을
+// 직접 실행하는 Node 테스트 러너(번들러 없음, .png 확장자를 모름)에서
+// 바로 터집니다. Image 생성 자체도 지연 평가(호출 시점)로 미뤄서 window 가
+// 없는 환경에서 이 모듈을 import 하는 것만으로는 문제가 없게 합니다.
+const lionPatternBgSrc = new URL('./assets/lion-pattern-bg.png', import.meta.url).href
+let lionPatternImage = null
+function getLionPatternImage() {
+  if (!lionPatternImage) {
+    lionPatternImage = new Image()
+    lionPatternImage.src = lionPatternBgSrc
+  }
+  return lionPatternImage
+}
+
 export const CAMERA_FRAMES = [
   {
     key: 'photomatic',
@@ -94,16 +112,23 @@ function drawLabel(ctx, text, x, y, size, align = 'left', color = '#fff') {
 }
 
 function drawPhotomatic(ctx) {
-  ctx.fillStyle = '#000'
+  const bg = getLionPatternImage()
+  if (bg.complete && bg.naturalWidth) {
+    drawCover(ctx, bg, { x: 0, y: 0, width: 736, height: 467 })
+  } else {
+    // 패턴 이미지가 아직 로드되기 전이면(드물게 촬영이 아주 빠른 경우)
+    // 눈에 띄는 빈 공간 대신 무난한 회색으로 대체합니다.
+    ctx.fillStyle = '#8a8a8a'
+    ctx.fillRect(0, 0, 736, 467)
+  }
+  ctx.fillStyle = 'rgba(0, 0, 0, .22)'
   ctx.fillRect(0, 0, 736, 467)
-  const glowRadius = 0.27 * Math.hypot(736, 467)
-  drawGlow(ctx, 0, 0, glowRadius, 'rgba(255,55,82,.95)')
-  drawGlow(ctx, 736, 0, glowRadius, 'rgba(31,80,255,.75)')
-  drawGlow(ctx, 0, 467, glowRadius, 'rgba(0,124,67,.68)')
-  drawGlow(ctx, 736, 467, glowRadius, 'rgba(255,193,38,.76)')
+  ctx.fillStyle = '#d9d9d9'
+  ctx.fillRect(52, 60, 313, 324)
+  ctx.fillRect(371, 60, 313, 324)
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
-  drawLabel(ctx, 'PHOTOMATIC', 684, 20, 13, 'right')
+  drawLabel(ctx, 'LIKELION', 684, 20, 13, 'right')
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 
@@ -270,7 +295,7 @@ function drawPhotomaticOverlay(ctx) {
   ctx.fillRect(365, 60, 6, 324)
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
-  drawLabel(ctx, 'PHOTOMATIC', 684, 20, 13, 'right')
+  drawLabel(ctx, 'LIKELION', 684, 20, 13, 'right')
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 
