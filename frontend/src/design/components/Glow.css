@@ -1,0 +1,67 @@
+/* 👤 담당: 나연
+   화면 네 귀퉁이를 떠다니는 배경 글로우 이펙트 (온보딩 대기화면 연출을 재사용 가능하게 분리).
+   부모에 position:relative + overflow:hidden 을 주면 그 영역을 꽉 채웁니다.
+   blur 를 너무 크게 주면 overflow:hidden 에 거의 다 잘려서 옆면이 뭉개져 보이므로
+   (features/result/Result.css 에서 겪은 문제) 60px 로 맞췄습니다. */
+.ds-glow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ds-glow__blob {
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.78;
+  background: radial-gradient(circle, var(--glow-color), transparent 72%);
+  animation:
+    ds-glow-drift var(--drift-duration) ease-in-out infinite,
+    ds-glow-hue var(--hue-duration) linear infinite;
+}
+
+.ds-glow__blob--1 {
+  left: -220px;
+  top: -260px;
+  --drift-duration: 13s;
+  --hue-duration: 16s;
+  animation-delay: 0s, -3s;
+}
+.ds-glow__blob--2 {
+  right: -260px;
+  top: -260px;
+  --drift-duration: 11s;
+  --hue-duration: 14s;
+  animation-delay: -4s, -8s;
+}
+.ds-glow__blob--3 {
+  left: -260px;
+  bottom: -260px;
+  --drift-duration: 15s;
+  --hue-duration: 18s;
+  animation-delay: -7s, -5s;
+}
+.ds-glow__blob--4 {
+  right: -280px;
+  bottom: -240px;
+  --drift-duration: 12s;
+  --hue-duration: 15s;
+  animation-delay: -9s, -11s;
+}
+
+@keyframes ds-glow-drift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(260px, -130px); }
+  50%  { transform: translate(100px, 190px); }
+  75%  { transform: translate(-220px, 70px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes ds-glow-hue {
+  from { filter: blur(60px) hue-rotate(0deg); }
+  to { filter: blur(60px) hue-rotate(360deg); }
+}
