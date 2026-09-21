@@ -70,9 +70,10 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* ── 중앙 상단: 모드 + 질문 + 문제 번호 (모드 인트로가 떠 있는 동안은 숨깁니다 —
-              Figma 05_플레이 — 모드강조 시안3 에서도 인트로 아래 요소들은 hidden 처리돼 있습니다) */}
-          {game.phase === 'question' && (
+          {/* ── 중앙 상단: 모드 + 질문 + 문제 번호 (모드 인트로가 떠 있는 동안만 숨깁니다 —
+              Figma 05_플레이 — 모드강조 시안3 에서도 인트로 아래 요소들은 hidden 처리돼 있습니다.
+              feedback 단계에서는 단어 카드처럼 이것도 그대로 남아있어야 합니다.) */}
+          {game.phase !== 'intro' && (
             <div className="game__head">
               <p className="game__question">
                 <span className="game__mode-tag">{game.modeLabel}</span>
