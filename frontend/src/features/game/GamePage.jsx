@@ -2,14 +2,10 @@
 // 게임 화면 조립. 로직은 useStroopGame 훅에 있습니다.
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useStroopGame } from './useStroopGame.js'
+import { useStroopGame, BADGE_VISIBLE_MS } from './useStroopGame.js'
 import { useKioskScale } from '../../shared/hooks/useKioskScale.js'
 import mascotHype from './assets/mascot-hype.png'
 import './Game.css'
-
-// 콤보/스피드/오답 배지가 화면에 떠 있는 시간 (Game.css 의 game-badge-pop 애니메이션
-// 길이와 맞춰야 합니다)
-const BADGE_VISIBLE_MS = 1100
 
 export default function GamePage() {
   const navigate = useNavigate()
@@ -97,7 +93,11 @@ export default function GamePage() {
 
           {/* ── 모드 인트로: 문제가 바뀔 때마다 잠깐 떠서 "이번 문제는 색/뜻이에요!" 를
               알려줍니다 (Figma 05_플레이 — 모드강조 시안3, node 420:342/420:395).
-              단어·색 중 뭘 봐야 하는지 헷갈린다는 피드백으로 나연님이 새로 만든 화면입니다. */}
+              단어·색 중 뭘 봐야 하는지 헷갈린다는 피드백으로 나연님이 새로 만든 화면입니다.
+              답을 고른 직후에는 'feedback' 단계라 이 인트로는 아직 안 뜨고, 방금 보던 단어
+              카드 위에 콤보/오답 배지 + 마스코트만 잠깐 얹혀서 보였다가 그다음에야 이
+              인트로가 화면을 덮습니다 (예전엔 인트로가 배지와 동시에 떠서 서로 가리는
+              문제가 있었습니다). */}
           {game.phase === 'intro' ? (
             <div className={`game__mode-intro game__mode-intro--${game.isColorMode ? 'color' : 'word'}`}>
               <p className="game__mode-intro-watermark">{game.isColorMode ? 'COLOR' : 'Meaning'}</p>
@@ -118,7 +118,7 @@ export default function GamePage() {
                 />
               </div>
 
-              {/* ── 단어 카드 */}
+              {/* ── 단어 카드 (feedback 단계에서는 방금 답한 단어가 그대로 남아있습니다) */}
               <div className="game__card">
                 <span className="game__word" style={{ color: game.quiz.inkColor.css }}>
                   {game.quiz.word.label}
