@@ -111,7 +111,7 @@ test('사진을 슬롯 비율에 맞게 중앙 크롭한다', () => {
   assert.deepEqual(calls[0], [{ width: 1600, height: 900 }, 350, 0, 900, 900, 10, 20, 100, 100])
 })
 
-test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만든다', () => {
+test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만든다', async () => {
   const draws = []
   const gradient = { addColorStop() {} }
   const ctx = {
@@ -130,13 +130,13 @@ test('합성 결과는 슬롯 수만큼 사진을 그리고 JPEG 한 장을 만�
   }
   const images = [{ width: 640, height: 480 }, { width: 640, height: 480 }, { width: 640, height: 480 }]
 
-  const result = composeFrame(canvas, getCameraFrame('film'), images)
+  const result = await composeFrame(canvas, getCameraFrame('film'), images)
 
   assert.equal(draws.length, 3)
   assert.equal(result, 'data:image/jpeg;base64,result')
 })
 
-test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만든다', () => {
+test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만든다', async () => {
   const fills = []
   const gradient = { addColorStop() {} }
   const ctx = {
@@ -155,7 +155,7 @@ test('촬영된 폴라로이드는 카드 바깥 배경 없이 투명 PNG로 만
     },
   }
 
-  const result = composeFrame(canvas, getCameraFrame('polaroid'), [
+  const result = await composeFrame(canvas, getCameraFrame('polaroid'), [
     { width: 640, height: 480 },
     { width: 640, height: 480 },
   ])

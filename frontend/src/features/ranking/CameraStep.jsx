@@ -204,7 +204,7 @@ export default function CameraStep({ onNext, onSkip }) {
     }
   }, [phase, shots.length, frame])
 
-  function capture() {
+  async function capture() {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas) return
@@ -224,7 +224,7 @@ export default function CameraStep({ onNext, onSkip }) {
       return
     }
 
-    const result = composeFrame(canvas, selectedFrame, nextShots)
+    const result = await composeFrame(canvas, selectedFrame, nextShots)
     setPhoto(result)
     streamRef.current?.getTracks().forEach((track) => track.stop())
     setPhase('captured')

@@ -1,3 +1,7 @@
+// new URL(...) 패턴을 씁니다 — 일반 import 로 받으면 이 파일을 Vite 없이
+// node --test 로 직접 로드하는 기존 테스트가 .webp 확장자를 못 읽어 깨집니다.
+const photomaticLionPattern = new URL('./assets/photomatic-lion-pattern.webp', import.meta.url).href
+
 export const CAMERA_FRAMES = [
   {
     key: 'photomatic',
@@ -93,14 +97,16 @@ function drawLabel(ctx, text, x, y, size, align = 'left', color = '#fff') {
   ctx.fillText(text, x, y)
 }
 
-function drawPhotomatic(ctx) {
+// 배경을 디자인 요청으로 사자 패턴 이미지로 교체했습니다. 흰 라벨(TAKE YOUR
+// MEMORY 등)이 패턴의 흰 바탕 위에서 묻히지 않도록, 패턴을 덮은 뒤 검정
+// 틴트를 한 번 더 얹어 대비를 살립니다 — 사진 슬롯 2개는 이 위에 그대로
+// 그려지므로(drawCover, composeFrame) 영향받지 않습니다.
+function drawPhotomatic(ctx, patternImage) {
   ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, 736, 467)
-  const glowRadius = 0.27 * Math.hypot(736, 467)
-  drawGlow(ctx, 0, 0, glowRadius, 'rgba(255,55,82,.95)')
-  drawGlow(ctx, 736, 0, glowRadius, 'rgba(31,80,255,.75)')
-  drawGlow(ctx, 0, 467, glowRadius, 'rgba(0,124,67,.68)')
-  drawGlow(ctx, 736, 467, glowRadius, 'rgba(255,193,38,.76)')
+  drawCover(ctx, patternImage, { x: 0, y: 0, width: 736, height: 467 })
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+  ctx.fillRect(0, 0, 736, 467)
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
   drawLabel(ctx, 'PHOTOMATIC', 684, 20, 13, 'right')
@@ -189,7 +195,21 @@ function getRenderScale() {
   return Math.min(window.devicePixelRatio || 1, 2) * 3
 }
 
-export function composeFrame(canvas, frame, images) {
+// 포토매틱 배경 패턴은 촬영마다 새로 그리므로, 한 번만 로드해서 재사용합니다.
+let photomaticPatternPromise = null
+function loadPhotomaticPattern() {
+  if (!photomaticPatternPromise) {
+    photomaticPatternPromise = new Promise((resolve, reject) => {
+      const image = new Image()
+      image.onload = () => resolve(image)
+      image.onerror = () => reject(new Error('배경 이미지를 불러오지 못했습니다'))
+      image.src = photomaticLionPattern
+    })
+  }
+  return photomaticPatternPromise
+}
+
+export async function composeFrame(canvas, frame, images) {
   const RENDER_SCALE = getRenderScale()
   canvas.width = frame.width * RENDER_SCALE
   canvas.height = frame.height * RENDER_SCALE
@@ -197,7 +217,7 @@ export function composeFrame(canvas, frame, images) {
   ctx.scale(RENDER_SCALE, RENDER_SCALE)
   ctx.imageSmoothingQuality = 'high'
 
-  if (frame.key === 'photomatic') drawPhotomatic(ctx)
+  if (frame.key === 'photomatic') drawPhotomatic(ctx, await loadPhotomaticPattern())
   if (frame.key === 'polaroid') drawPolaroid(ctx)
   if (frame.key === 'film') drawFilm(ctx)
 
