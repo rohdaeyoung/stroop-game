@@ -291,8 +291,9 @@ export async function compressForUpload(dataUrl, maxBytes = 950 * 1024) {
 }
 
 function drawPhotomaticOverlay(ctx) {
-  ctx.fillStyle = '#000'
-  ctx.fillRect(365, 60, 6, 324)
+  // 패널 사이 divider 선은 그리지 않습니다 - 라이브 미리보기(CSS)에도 선이
+  // 없어서 최종 사진과 미리보기 모양을 맞췄고, 호잇 배경 패턴이 그 틈으로
+  // 그대로 비쳐 보입니다.
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
   drawLabel(ctx, 'LIKELION', 684, 20, 13, 'right')
