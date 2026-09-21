@@ -351,3 +351,62 @@
   box-shadow: 0 0 32px 8px rgba(255, 255, 255, 0.9);
   transition: transform 0.05s ease-out, filter 0.08s ease;
 }
+
+/* ───── 모드 인트로 시트 (Figma 05_플레이 — 모드강조 시안3, node 420:342/420:395) ─────
+   top_hud_row(점수/목숨/전체시간)는 그대로 보이고, 그 아래 영역만 색깔 시트로 덮습니다.
+   시트 색은 버튼 색(--stroop-red/--stroop-blue)과 살짝 다른 Figma 고정값이라 그대로 씁니다. */
+.game__mode-intro {
+  position: absolute;
+  top: 187px;
+  left: 0;
+  width: 1920px;
+  height: 893px;
+  border-radius: 48px 48px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  animation: game-mode-intro-in 0.25s ease-out;
+}
+
+.game__mode-intro--color { background: #ff4759; }
+.game__mode-intro--word { background: #3b7afa; }
+
+@keyframes game-mode-intro-in {
+  0% { opacity: 0; transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.game__mode-intro-watermark {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 90px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.game__mode-intro-headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 120px;
+  color: #fff;
+  text-shadow: 0 12px 6.7px rgba(0, 0, 0, 0.25);
+}
+
+.game__mode-intro-headline em {
+  font-style: normal;
+  font-size: 160px;
+  color: var(--stroop-yellow);
+}
+
+.game__mode-intro-sub {
+  margin: 24px 0 0;
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.85);
+}
