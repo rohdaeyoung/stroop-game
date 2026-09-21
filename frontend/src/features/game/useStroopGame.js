@@ -15,7 +15,13 @@ const MAX_SERVER_PLAY_TIME_MS = 40_000
 // (Figma 05_플레이 — 모드강조 시안3). 단어·색이 헷갈린다는 피드백 때문에 추가했습니다.
 // 이 시간 동안은 제한시간 카운트다운이 멈춰있어서, 참가자가 손해를 보지 않습니다.
 // 650ms → 1400ms 로 늘렸다가 "1.4초는 너무 길다"는 피드백을 받아 1000ms 로 조정했습니다.
-const MODE_INTRO_MS = 1000
+export const MODE_INTRO_MS = 1000
+
+// 콤보/스피드/오답 배지가 화면에 떠 있는 시간 (Game.css 의 game-badge-pop 애니메이션
+// 길이와 맞춰야 합니다). 답을 고른 직후 이 시간만큼은 'feedback' 단계로 배지+마스코트만
+// 보여주고, 그다음에야 다음 문제의 모드 인트로를 띄웁니다 — 두 팝업이 동시에 뜨면서
+// 서로 가리는 문제가 있었습니다.
+export const BADGE_VISIBLE_MS = 1100
 
 /** 남은 밀리초를 0:24 형태로 */
 function formatTime(ms) {
@@ -40,9 +46,13 @@ export function useStroopGame({ onGameOver }) {
   const difficulty = getDifficulty(correctCount)
   const [quiz, setQuiz] = useState(() => createQuiz(difficulty.choiceCount))
   const [timeLeft, setTimeLeft] = useState(difficulty.limitMs)
+  // 'feedback' = 방금 고른 답의 배지(콤보/스피드/오답)만 잠깐 보이는 중 (다음 문제 준비 전)
   // 'intro' = 모드 안내 시트가 떠 있는 중 (아직 문제 안 보임)
   // 'question' = 단어 + 선택지가 보이고 실제로 답을 고를 수 있는 중
   const [phase, setPhase] = useState('intro')
+  const feedbackTimerRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(feedbackTimerRef.current), [])
 
   // HUD 의 전체 시간 게이지용. 화면 표시 전용이라 게임 판정에는 쓰지 않습니다.
   const [totalLeftMs, setTotalLeftMs] = useState(TOTAL_PLAY_MS)
@@ -182,7 +192,9 @@ export function useStroopGame({ onGameOver }) {
       setCorrectCount(nextCorrectCount)
       badgeSeqRef.current += 1
       setLastGain({ combo: nextCombo, speedBonus, seq: badgeSeqRef.current })
-      nextQuestion(nextCorrectCount)
+      // 배지(콤보/스피드)가 다 보일 때까지는 다음 문제의 모드 인트로를 띄우지 않습니다.
+      setPhase('feedback')
+      feedbackTimerRef.current = setTimeout(() => nextQuestion(nextCorrectCount), BADGE_VISIBLE_MS)
     } else {
       const next = applyMiss({
         score: scoreRef.current,
@@ -214,7 +226,12 @@ export function useStroopGame({ onGameOver }) {
           wrongCount: nextWrongCount,
         })
       } else {
-        nextQuestion(correctCountRef.current)
+        // 배지(오답)가 다 보일 때까지는 다음 문제의 모드 인트로를 띄우지 않습니다.
+        setPhase('feedback')
+        feedbackTimerRef.current = setTimeout(
+          () => nextQuestion(correctCountRef.current),
+          BADGE_VISIBLE_MS,
+        )
       }
     }
   }, [quiz, difficulty, phase, endGame, nextQuestion])
