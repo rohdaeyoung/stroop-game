@@ -10,23 +10,23 @@ const COUNTDOWN_SECONDS = 3
 
 // Figma 실측: 프레임마다 사진 폭이 달라서 손 흔드는 사자와 안 겹치게 하려면
 // 촬영 후 좌측 이동량과 사자 그룹 위치를 프레임별로 다르게 잡아야 함
-const CAPTURED_SHIFT_X = { photomatic: 356, polaroid: 278, film: 324 }
-const CAPTURED_CELEBRATION_LEFT = { photomatic: 1150, polaroid: 990, film: 974 }
+const CAPTURED_SHIFT_X = { photomatic: 356, lion: 356, polaroid: 278, film: 324 }
+const CAPTURED_CELEBRATION_LEFT = { photomatic: 1150, lion: 1150, polaroid: 990, film: 974 }
 
 // 촬영 중(라이브)에는 프레임 박스를 실제 비율대로 작게 줄여서 좌측에 놓고,
 // 그 옆에 확대경을 배치함 (피그마 재구성 반영) - 캔버스 기준 1920x1080.
 // 포토매틱은 확대경이 없어서(가로로 넓어 이미 잘 보임) 그만큼 프레임 자체를
 // 더 키움 - 위아래 글씨/셔터 버튼과 안 겹치는 선에서 최대치로 잡은 값.
-const LIVE_FRAME_HEIGHT_BY_TYPE = { photomatic: 686, polaroid: 540, film: 540 }
+const LIVE_FRAME_HEIGHT_BY_TYPE = { photomatic: 686, lion: 686, polaroid: 540, film: 540 }
 // 포토매틱은 제목 바로 아래에 빈 공간이 남지 않도록 여백을 최소로 줄이고
 // (다른 타입은 확대경과 나란히 놓여야 해서 기존 28px 그대로 둠) 그만큼을
 // 전부 프레임 높이 쪽으로 돌림
-const LIVE_FRAME_MARGIN_TOP_BY_TYPE = { photomatic: -4, polaroid: 28, film: 28 }
+const LIVE_FRAME_MARGIN_TOP_BY_TYPE = { photomatic: -4, lion: -4, polaroid: 28, film: 28 }
 // 포토매틱은 확대경이 없어 프레임을 키울 공간이 더 필요함 - 셔터 버튼 자체의
 // 위쪽 여백을 줄여서 그만큼 프레임에 더 배정함. 폴라로이드/필름은 반대로 -
 // 프레임 자체는 그대로 두고, 셔터 버튼 여백을 늘려 버튼을 밀어내려서 그만큼
 // 옆 확대경이 커질 세로 공간을 확보함
-const SHUTTER_DOT_MARGIN_TOP_BY_TYPE = { photomatic: 8, polaroid: 132, film: 132 }
+const SHUTTER_DOT_MARGIN_TOP_BY_TYPE = { photomatic: 8, lion: 8, polaroid: 132, film: 132 }
 // 프레임 박스(+셔터 버튼 자체 여백)가 커지면 그 아래 셔터 버튼도 같이
 // 밀려 내려감(변화량의 절반만큼) - 화살표는 절대 위치라 버튼을 따라가지
 // 않으니 같은 공식으로 계산해서 항상 버튼 옆에 붙어있게 함.
@@ -64,6 +64,16 @@ function FrameArtwork({ frameKey, compact = false }) {
         <span className="camera-art__top camera-art__top--left">TAKE YOUR MEMORY</span>
         <span className="camera-art__top camera-art__top--center">2026.09.22</span>
         <span className="camera-art__top camera-art__top--right">PHOTOMATIC</span>
+        <strong className="camera-art__brand">LIKELION SKU</strong>
+      </div>
+    )
+  }
+  if (frameKey === 'lion') {
+    return (
+      <div className={`camera-art camera-art--lion${compact ? ' camera-art--compact' : ''}`} aria-hidden="true">
+        <span className="camera-art__top camera-art__top--left">TAKE YOUR MEMORY</span>
+        <span className="camera-art__top camera-art__top--center">2026.09.22</span>
+        <span className="camera-art__top camera-art__top--right">LIKELION</span>
         <strong className="camera-art__brand">LIKELION SKU</strong>
       </div>
     )
@@ -129,7 +139,7 @@ export default function CameraStep({ onNext, onSkip }) {
     (liveFrameMarginTop + liveFrameHeight + shutterDotMarginTop - SHUTTER_ARROWS_BASE_SLOT) / 2
   // 포토매틱은 이미 가로로 넓어서 확대경 없이도 잘 보임 - 확대경은 세로로
   // 작게 찍히는 폴라로이드/필름에만 붙임
-  const showMagnifier = frame !== 'photomatic'
+  const showMagnifier = frame !== 'photomatic' && frame !== 'lion'
   const liveShiftX = showMagnifier ? (1920 - liveFrameWidth) / 2 - LIVE_FRAME_LEFT : 0
   const liveMagnifierX = LIVE_FRAME_LEFT + liveFrameWidth + LIVE_MAGNIFIER_GAP
   // 우측 프레임 선택 칸과 겹치지 않게 남는 공간만큼만 확대경을 줄임
@@ -204,7 +214,7 @@ export default function CameraStep({ onNext, onSkip }) {
     }
   }, [phase, shots.length, frame])
 
-  function capture() {
+  async function capture() {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas) return
@@ -224,7 +234,7 @@ export default function CameraStep({ onNext, onSkip }) {
       return
     }
 
-    const result = composeFrame(canvas, selectedFrame, nextShots)
+    const result = await composeFrame(canvas, selectedFrame, nextShots)
     setPhoto(result)
     streamRef.current?.getTracks().forEach((track) => track.stop())
     setPhase('captured')

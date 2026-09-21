@@ -94,7 +94,7 @@ test('완료 버튼은 화면 중앙에 그대로 유지한다', () => {
 test('사자는 빈 오른쪽 영역 중앙에 있고 손은 얼굴 가까이 내려온다', () => {
   // 프레임마다 사진 폭이 달라서 사자 위치를 프레임별로 다르게 잡아야 함 -
   // 고정 CSS left 하나가 아니라 프레임 타입별 맵을 JS에서 인라인으로 넣어줌
-  assert.match(cameraSource, /const CAPTURED_CELEBRATION_LEFT = \{ photomatic: \d+, polaroid: \d+, film: \d+ \}/)
+  assert.match(cameraSource, /const CAPTURED_CELEBRATION_LEFT = \{[^}]*photomatic: \d+[^}]*polaroid: \d+[^}]*film: \d+[^}]*\}/)
   assert.match(cameraSource, /CAPTURED_CELEBRATION_LEFT\[frame\]/)
   const handsRule = rankingCss.match(/\.camera__celebration-hands\s*\{[^}]*\}/s)?.[0] ?? ''
   assert.match(handsRule, /top:\s*92px/)

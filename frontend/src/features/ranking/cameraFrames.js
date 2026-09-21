@@ -1,7 +1,23 @@
+// new URL(...) 패턴을 씁니다 — 일반 import 로 받으면 이 파일을 Vite 없이
+// node --test 로 직접 로드하는 기존 테스트가 .webp 확장자를 못 읽어 깨집니다.
+const lionPattern = new URL('./assets/lion-pattern.webp', import.meta.url).href
+
 export const CAMERA_FRAMES = [
   {
     key: 'photomatic',
     label: '포토매틱',
+    width: 736,
+    height: 467,
+    slots: [
+      { x: 52, y: 60, width: 313, height: 324, rotation: 0 },
+      { x: 371, y: 60, width: 313, height: 324, rotation: 0 },
+    ],
+  },
+  {
+    // 포토매틱과 레이아웃(사진 2칸 + 라벨)은 동일하고, 배경만 검정+글로우
+    // 대신 DY가 보내준 사자 패턴 이미지를 씁니다.
+    key: 'lion',
+    label: '사자무늬',
     width: 736,
     height: 467,
     slots: [
@@ -107,6 +123,16 @@ function drawPhotomatic(ctx) {
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 
+// 포토매틱과 레이아웃은 같고 배경만 사자 패턴 이미지로 바꿉니다. 흰 라벨이
+// 패턴의 흰 바탕 위에서 묻히지 않도록 35% 검정 틴트를 함께 얹습니다.
+function drawLion(ctx, patternImage) {
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, 736, 467)
+  drawCover(ctx, patternImage, { x: 0, y: 0, width: 736, height: 467 })
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+  ctx.fillRect(0, 0, 736, 467)
+}
+
 // Figma's "Polaroid Card" shape is rounded 3px; the divider ("Flap Seam")
 // line next to the label runs a fixed length per card, not a fraction of
 // the card height.
@@ -189,7 +215,21 @@ function getRenderScale() {
   return Math.min(window.devicePixelRatio || 1, 2) * 3
 }
 
-export function composeFrame(canvas, frame, images) {
+// 사자 패턴 배경은 촬영마다 새로 그리므로, 한 번만 로드해서 재사용합니다.
+let lionPatternPromise = null
+function loadLionPattern() {
+  if (!lionPatternPromise) {
+    lionPatternPromise = new Promise((resolve, reject) => {
+      const image = new Image()
+      image.onload = () => resolve(image)
+      image.onerror = () => reject(new Error('배경 이미지를 불러오지 못했습니다'))
+      image.src = lionPattern
+    })
+  }
+  return lionPatternPromise
+}
+
+export async function composeFrame(canvas, frame, images) {
   const RENDER_SCALE = getRenderScale()
   canvas.width = frame.width * RENDER_SCALE
   canvas.height = frame.height * RENDER_SCALE
@@ -198,6 +238,7 @@ export function composeFrame(canvas, frame, images) {
   ctx.imageSmoothingQuality = 'high'
 
   if (frame.key === 'photomatic') drawPhotomatic(ctx)
+  if (frame.key === 'lion') drawLion(ctx, await loadLionPattern())
   if (frame.key === 'polaroid') drawPolaroid(ctx)
   if (frame.key === 'film') drawFilm(ctx)
 
@@ -205,6 +246,7 @@ export function composeFrame(canvas, frame, images) {
 
   // Frame labels and borders must remain above the photos.
   if (frame.key === 'photomatic') drawPhotomaticOverlay(ctx)
+  if (frame.key === 'lion') drawLionOverlay(ctx)
   if (frame.key === 'polaroid') drawPolaroidOverlay(ctx)
   if (frame.key === 'film') drawFilmOverlay(ctx)
 
@@ -271,6 +313,15 @@ function drawPhotomaticOverlay(ctx) {
   drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
   drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
   drawLabel(ctx, 'PHOTOMATIC', 684, 20, 13, 'right')
+  drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
+}
+
+function drawLionOverlay(ctx) {
+  ctx.fillStyle = '#000'
+  ctx.fillRect(365, 60, 6, 324)
+  drawLabel(ctx, 'TAKE YOUR MEMORY', 52, 20, 13)
+  drawLabel(ctx, '2026.09.22', 368, 20, 13, 'center')
+  drawLabel(ctx, 'LIKELION', 684, 20, 13, 'right')
   drawLabel(ctx, 'LIKELION SKU', 368, 407, 26, 'center')
 }
 

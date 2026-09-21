@@ -573,6 +573,14 @@
     radial-gradient(circle at 0 100%, rgba(0,124,67,.68), transparent 27%),
     radial-gradient(circle at 100% 100%, rgba(255,193,38,.76), transparent 27%);
 }
+/* 포토매틱과 레이아웃은 같고 배경만 사자 패턴 이미지 — 실제 합성 결과
+   (cameraFrames.js drawLion)과 같은 35% 검정 틴트를 얹어서 라이브 미리보기와
+   최종 사진이 같은 톤으로 보이게 합니다. */
+.camera-art--lion {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    url('./assets/lion-pattern.webp') center / cover no-repeat;
+}
 .camera-art__top { position: absolute; top: 4.25%; font-size: clamp(7px, 1.45vw, 13px); letter-spacing: .03em; }
 .camera-art__top--left { left: 7%; }
 .camera-art__top--center { left: 50%; transform: translateX(-50%); }
