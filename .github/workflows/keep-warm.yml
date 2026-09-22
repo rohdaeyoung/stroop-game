@@ -1,0 +1,23 @@
+name: 백엔드 깨어있게 유지
+
+# Render 무료 플랜은 15분 동안 요청이 없으면 백엔드가 잠들고, 깨는 데 30~50초 걸린다
+# (docs/DEPLOY.md "콜드 스타트" 참고). 그 사이 부스에서 참가자가 점수를 제출하면
+# 요청이 타임아웃되거나 사용자가 기다리다 이탈할 수 있다. 15분보다 짧은 주기로
+# /api/health 를 두드려서 잠들 틈을 주지 않는다.
+#
+# GitHub Actions 스케줄은 부하가 몰리면 몇 분 늦게 실행될 수 있어(공식 문서 안내),
+# 15분 정각이 아니라 10분 주기로 여유를 둔다.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # 수동으로 한 번 바로 깨우고 싶을 때
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 헬스 체크 호출
+        run: |
+          curl -sf --retry 3 --retry-delay 5 --max-time 60 \
+            https://stroop-api.onrender.com/api/health
